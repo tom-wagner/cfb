@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import _ from 'lodash';
 import { Loader, Dimmer } from 'semantic-ui-react'
 import { unreachable } from '../utils'
 import SimulationTable from './SimulationTable';
@@ -15,11 +16,16 @@ export enum PageStatusEnum {
 
 type SeasonSimulationForOneTeam = { [key: string]: number }
 export type IndividualTeamSimulationResults = {
+  teamName: string,
   conferenceResults: SeasonSimulationForOneTeam,
   conferenceTitleCount: number,
+  conferenceTitleWinPct: number,
   divisionTitleCount: number,
+  divisionTitleWinPct: number,
   nonConferenceResults: SeasonSimulationForOneTeam,
   totalWins: SeasonSimulationForOneTeam,
+  avgPowerRtg: number,
+  powerRtgs: { [key: string]: number },
 };
 
 type Conference = {
@@ -34,8 +40,8 @@ type Conference = {
 export type Conferences = { [key: string]: Conference };
 
 // TODO: Improve typing
-export type Teams = {};
-export type SimulationResults = { [key: string]: IndividualTeamSimulationResults };
+export type Team = {};
+export type SimulationResults = { [key: string]: IndividualTeamSimulationResults & Team };
 export type TeamRatingsMap = { [key: string]: { [key: string]: number } };
 
 type SimulationResponse = {
@@ -48,7 +54,6 @@ type State = {
   simulationResults: SimulationResults | null,
   numberOfSimulations: number,
   conferences: Conferences | null,
-  teams: Teams | null,
 };
 
 const INITIAL_STATE = {
@@ -62,7 +67,7 @@ const INITIAL_STATE = {
 // type TableState = { column: string | null , data: [], direction: string | null };
 const ApplicationWrapper: React.FC = () => {
   const [state, setState] = useState<State>(INITIAL_STATE);
-  const { pageStatus, simulationResults, numberOfSimulations, conferences, teams } = state;
+  const { pageStatus, simulationResults, numberOfSimulations, conferences } = state;
 
   useAsyncEffect(async () => {
     console.log('firing async effect');
@@ -73,9 +78,12 @@ const ApplicationWrapper: React.FC = () => {
         getConferences(),
         getTeams(),
       ]);
-      setState({ numberOfSimulations, simulationResults, conferences, teams, pageStatus: PageStatusEnum.HAS_DATA });
+      console.log({ teams });
+      const mergedSimulationsAndTeamsWithTeamName = _.mapValues(simulationResults, (val, key) => _.merge(val, _.get(teams, key), { teamName: key }));
+      setState({ numberOfSimulations, simulationResults: mergedSimulationsAndTeamsWithTeamName, conferences, pageStatus: PageStatusEnum.HAS_DATA });
     } catch (e) {
       // set status error
+      console.log({ e });
     }
   }, []);
 
@@ -93,10 +101,10 @@ const ApplicationWrapper: React.FC = () => {
     case PageStatusEnum.HAS_DATA:
       return (
         <SimulationTable
+          // @ts-ignore
           simulationResults={simulationResults as SimulationResults}
           numberOfSimulations={numberOfSimulations}
           conferences={conferences as Conferences}
-          teams={teams as Teams}
         />
       );
     default:

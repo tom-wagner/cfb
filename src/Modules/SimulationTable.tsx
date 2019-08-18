@@ -1,35 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Dropdown, DropdownProps } from 'semantic-ui-react'
 import _ from 'lodash';
-import { TeamRatingsMap, SimulationResults, IndividualTeamSimulationResults, Conferences, Teams } from './ApplicationWrapper';
-import { number } from 'prop-types';
-import { RSA_NO_PADDING } from 'constants';
-import { getConferences } from '../api';
+import { SimulationResults, IndividualTeamSimulationResults, Conferences, Team } from './ApplicationWrapper';
+import { getColorByValue } from '../utils';
+import { exportDefaultSpecifier } from '@babel/types';
 
 // const [ENTROPY, FPI, MASSEY, SP_PLUS, AVERAGE] = ['ENTROPY', 'FPI', 'MASSEY', 'SP_PLUS', 'AVERAGE'];
 
 // TODO: Turn to constants
-const INITIAL_COLUMNS_TO_SHOW = ['Team Name', 'Average Power Rtg', 'Win Division %', 'Win Conference %'];
-const ADDITIONAL_COLUMN_OPTIONS = _.map(_.range(1, 13), x => `${x}+ wins %`);
+const INITIAL_COLUMNS_TO_SHOW = [
+  // [textToShowToUser, propertyOnTeamObject]
+  ['Team Name', 'teamName'],
+  ['Average Power Rtg', 'avgPowerRtg'],
+  ['Win Division %', 'divisionTitleWinPct'],
+  ['Win Conference %', 'conferenceTitleWinPct'],
+];
+
+// const ADDITIONAL_COLUMN_OPTIONS = _.map(_.range(1, 13), x => `${x}+ wins %`);
 
 
-const columnMapper = (
+const styleByValue = (
   columnName: string,
-  teamName: string,
-  columnValuesObject: IndividualTeamSimulationResults,
-  numberOfSimulations: number,
-  teams: Teams,
+  columnValuesObject: IndividualTeamSimulationResults & Team,
+) => {
+  if (columnName === 'divisionTitleWinPct' && columnValuesObject.divisionTitleWinPct !== -1) {
+    return { backgroundColor: getColorByValue(columnValuesObject.divisionTitleWinPct) };
+  }
+  if (columnName === 'conferenceTitleWinPct' && columnValuesObject.conferenceTitleWinPct !== -1) {
+    return { backgroundColor: getColorByValue(columnValuesObject.conferenceTitleWinPct) };
+  }
+  if (columnName === 'avgPowerRtg') {
+    return { backgroundColor: getColorByValue(columnValuesObject.avgPowerRtg * .01) };
+  }
+  return {};
+}
+
+const columnMapperAndStyler = (
+  columnName: string,
+  columnValuesObject: IndividualTeamSimulationResults & Team,
 ) => {
   const map = {
-    'Team Name': () => teamName,
-    // @ts-ignore
-    'Average Power Rtg': () => teams[teamName].avg_power_rtg,
-    'Win Division %': () => `${(columnValuesObject.divisionTitleCount / numberOfSimulations * 100).toFixed(2)}%`,
-    'Win Conference %': () => `${(columnValuesObject.conferenceTitleCount / numberOfSimulations * 100).toFixed(2)}%`,
+    'teamName': columnValuesObject.teamName,
+    'avgPowerRtg': columnValuesObject.avgPowerRtg,
+    'divisionTitleWinPct': columnValuesObject.divisionTitleWinPct === -1 ? 'N/A' : `${(columnValuesObject.divisionTitleWinPct * 100).toFixed(2)} %`,
+    'conferenceTitleWinPct': columnValuesObject.conferenceTitleWinPct === -1 ? 'N/A' : `${(columnValuesObject.conferenceTitleWinPct * 100).toFixed(2)} %`,
   };
 
+  const style = styleByValue(columnName, columnValuesObject);
+
   // @ts-ignore
-  return map[columnName]();
+  return [style, map[columnName]];
 }
 
 const determineTeamsToRender = (
@@ -64,16 +84,21 @@ const getDivisionDropdownOptions = (conferences: Conferences, conferenceToShow: 
 }
 
 type DropdownState = { conferenceToShow: string, divisionToShow: string };
+type SortState = { valueToSortBy: string, directionToSort: string };
 
 // TODO: By the time we get here these should not be null --> which should solve some typescript issues
-type SimulationTableProps = { simulationResults: SimulationResults, teams: Teams, conferences: Conferences, numberOfSimulations: number };
-const SimulationTable = ({ simulationResults, conferences, teams, numberOfSimulations }: SimulationTableProps) => {
+type SimulationTableProps = { simulationResults: SimulationResults, conferences: Conferences, numberOfSimulations: number };
+const SimulationTable = ({ simulationResults, conferences, numberOfSimulations }: SimulationTableProps) => {
   // TODO: Do I want column flexibility in V1?
   // const [columnsToShow, setColumnsToShow] = useState(INITIAL_COLUMNS_TO_SHOW);
 
-  // TODO: add typing
   const [{ conferenceToShow, divisionToShow }, updateDropdownState] = useState<DropdownState>({ conferenceToShow: '', divisionToShow: '' });
-  const [{ filteredTeams, conferenceDropdownOptions, divisionDropdownOptions }, setState] = useState({ filteredTeams: simulationResults, conferenceDropdownOptions: [], divisionDropdownOptions: [] })
+  const [
+    { filteredTeams, conferenceDropdownOptions, divisionDropdownOptions },
+    setState,
+  ] = useState({ filteredTeams: simulationResults, conferenceDropdownOptions: [], divisionDropdownOptions: [] });
+  // TODO: Needs to be by each column
+  const [{ valueToSortBy, directionToSort }, setValueToSortBy] = useState<SortState>({ valueToSortBy: 'avgPowerRtg', directionToSort: '' });
 
   useEffect(() => {
     const filteredTeams = determineTeamsToRender(simulationResults, conferences, conferenceToShow, divisionToShow);
@@ -81,7 +106,14 @@ const SimulationTable = ({ simulationResults, conferences, teams, numberOfSimula
     const divisionDropdownOptions = getDivisionDropdownOptions(conferences, conferenceToShow)
     // @ts-ignore
     setState({ filteredTeams, conferenceDropdownOptions, divisionDropdownOptions });
-  }, [conferenceToShow, divisionToShow])
+  }, [conferenceToShow, divisionToShow, conferences, simulationResults]);
+
+  // TODO: Could move into useEffect and listen for a change in sort direction or valueToSortBy
+  // sort --> inefficient to sort on every render but fast enough for now
+  const sortedTeams = _.sortBy(filteredTeams, team => {
+    // @ts-ignore
+    return (directionToSort === '' || directionToSort === 'DESC') ? -team[valueToSortBy] : team[valueToSortBy];
+  });
 
   return (
     <React.Fragment>
@@ -91,7 +123,6 @@ const SimulationTable = ({ simulationResults, conferences, teams, numberOfSimula
         closeOnChange
         selection
         options={conferenceDropdownOptions}
-        // TODO: condense together, reset division on conference change
         // @ts-ignore
         onChange={(e: React.SyntheticEvent<HTMLElement>, { value }: DropdownProps) => updateDropdownState({ divisionToShow: '', conferenceToShow: value })}
       />
@@ -107,19 +138,38 @@ const SimulationTable = ({ simulationResults, conferences, teams, numberOfSimula
           onChange={(e: React.SyntheticEvent<HTMLElement>, { value }: DropdownProps) => updateDropdownState({ divisionToShow: value, conferenceToShow })}
         />
       )}
+      {/* TODO: Add a note about sorting */}
+      {/* TODO: Add a note about clicking on the team names */}
       <Table sortable celled fixed unstackable>
         <Table.Header>
           <Table.Row>
             {/* // todo: add onClick logic */}
-            {_.map(INITIAL_COLUMNS_TO_SHOW, columnName => <Table.HeaderCell key={columnName}>{columnName}</Table.HeaderCell>)}
+            {_.map(INITIAL_COLUMNS_TO_SHOW, ([columnNameToShowUser, objectPropertyRelatedToColumnName]) => {
+              return (
+                <Table.HeaderCell
+                  key={columnNameToShowUser}
+                  onClick={(e: React.ChangeEvent) => setValueToSortBy(
+                    {
+                      valueToSortBy: objectPropertyRelatedToColumnName,
+                      directionToSort: directionToSort === 'ASC' || directionToSort === '' ? 'DESC' : 'ASC',
+                    }
+                  )}
+                >
+                  {columnNameToShowUser}
+                </Table.HeaderCell>
+              );
+            })}
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {_.map(filteredTeams, (simulationResults, teamName) => (
-            <Table.Row key={teamName}>
-              {_.map(INITIAL_COLUMNS_TO_SHOW, columnName => {
-                const value = columnMapper(columnName, teamName, simulationResults, numberOfSimulations, teams)
-                return <Table.Cell key={columnName}>{value}</Table.Cell>;
+          {/* // TODO: Improve typing */}
+          {_.map(sortedTeams, (team) => (
+            // @ts-ignore
+            <Table.Row key={team.teamName}>
+              {_.map(INITIAL_COLUMNS_TO_SHOW, ([columnNameToShowUser, objectPropertyRelatedToColumnName]) => {
+                // @ts-ignore
+                const [style, value] = columnMapperAndStyler(objectPropertyRelatedToColumnName, team)
+                return <Table.Cell style={style} key={columnNameToShowUser}>{value}</Table.Cell>;
               })}
             </Table.Row>
           ))}

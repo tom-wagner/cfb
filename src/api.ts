@@ -12,4 +12,10 @@ export const getSimulationResults = async () => {
 
 export const getConferences = async () => axios.get(`${BASE_API_URL}/conferences`).then(({ data }: AxiosResponse) => data);
 
-export const getTeams = async () => axios.get(`${BASE_API_URL}/teams`).then(({ data }: AxiosResponse) => data);
+// TODO: Map
+export const getTeams = async () => {
+  return axios.get(`${BASE_API_URL}/teams`).then(({ data }: AxiosResponse) => {
+    const camelCaseValues = _.mapValues(data, teamDetail => _.mapKeys(teamDetail, (v, k) => _.camelCase(k)));
+    return camelCaseValues;
+  });
+};
