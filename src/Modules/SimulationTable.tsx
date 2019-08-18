@@ -3,7 +3,6 @@ import { Table, Dropdown, DropdownProps } from 'semantic-ui-react'
 import _ from 'lodash';
 import { SimulationResults, IndividualTeamSimulationResults, Conferences, Team } from './ApplicationWrapper';
 import { getColorByValue } from '../utils';
-import { exportDefaultSpecifier } from '@babel/types';
 
 // const [ENTROPY, FPI, MASSEY, SP_PLUS, AVERAGE] = ['ENTROPY', 'FPI', 'MASSEY', 'SP_PLUS', 'AVERAGE'];
 
@@ -16,30 +15,52 @@ const INITIAL_COLUMNS_TO_SHOW = [
   ['Win Conference %', 'conferenceTitleWinPct'],
 ];
 
+// TODO: Consider using in team modal
 // const ADDITIONAL_COLUMN_OPTIONS = _.map(_.range(1, 13), x => `${x}+ wins %`);
 
-
+// TODO: Consider changing styling to make the styling relative to the other values being displayed
 const styleByValue = (
   columnName: string,
   columnValuesObject: IndividualTeamSimulationResults & Team,
 ) => {
-  if (columnName === 'divisionTitleWinPct' && columnValuesObject.divisionTitleWinPct !== -1) {
+  if (columnName === 'divisionTitleWinPct') {
+    if (columnValuesObject.divisionTitleWinPct === -1) {
+      return { backgroundColor: getColorByValue(0) };
+    }
     return { backgroundColor: getColorByValue(columnValuesObject.divisionTitleWinPct) };
   }
-  if (columnName === 'conferenceTitleWinPct' && columnValuesObject.conferenceTitleWinPct !== -1) {
+  if (columnName === 'conferenceTitleWinPct') {
+    if (columnValuesObject.conferenceTitleWinPct === -1) {
+      return { backgroundColor: getColorByValue(0) };
+    }
     return { backgroundColor: getColorByValue(columnValuesObject.conferenceTitleWinPct) };
   }
   if (columnName === 'avgPowerRtg') {
-    return { backgroundColor: getColorByValue(columnValuesObject.avgPowerRtg * .01) };
+    const absolutePowerRatingDivHundred = Math.abs(columnValuesObject.avgPowerRtg * .01);
+    return { backgroundColor: getColorByValue(absolutePowerRatingDivHundred) };
   }
   return {};
 }
+
+// PROOF OF CONCEPT FOR MODAL
+// const ModalExample = (teamName: string) => (
+//   <Modal trigger={<Button>{`${teamName}`}</Button>}>
+//     <Modal.Header>Select a Photo</Modal.Header>
+//     <Modal.Content>
+//       <Modal.Description>
+//         <p>We've found the following gravatar image associated with your e-mail address.</p>
+//         <p>Is it okay to use this photo?</p>
+//       </Modal.Description>
+//     </Modal.Content>
+//   </Modal>
+// )
 
 const columnMapperAndStyler = (
   columnName: string,
   columnValuesObject: IndividualTeamSimulationResults & Team,
 ) => {
   const map = {
+    // 'teamName': ModalExample(columnValuesObject.teamName),
     'teamName': columnValuesObject.teamName,
     'avgPowerRtg': columnValuesObject.avgPowerRtg,
     'divisionTitleWinPct': columnValuesObject.divisionTitleWinPct === -1 ? 'N/A' : `${(columnValuesObject.divisionTitleWinPct * 100).toFixed(2)} %`,
@@ -93,11 +114,10 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations }
   // const [columnsToShow, setColumnsToShow] = useState(INITIAL_COLUMNS_TO_SHOW);
 
   const [{ conferenceToShow, divisionToShow }, updateDropdownState] = useState<DropdownState>({ conferenceToShow: '', divisionToShow: '' });
-  const [
-    { filteredTeams, conferenceDropdownOptions, divisionDropdownOptions },
-    setState,
-  ] = useState({ filteredTeams: simulationResults, conferenceDropdownOptions: [], divisionDropdownOptions: [] });
-  // TODO: Needs to be by each column
+  const [{ filteredTeams, conferenceDropdownOptions, divisionDropdownOptions }, setState] = useState({
+     filteredTeams: simulationResults, conferenceDropdownOptions: [], divisionDropdownOptions: [],
+  });
+  // TODO: State needs to be maintained by each column
   const [{ valueToSortBy, directionToSort }, setValueToSortBy] = useState<SortState>({ valueToSortBy: 'avgPowerRtg', directionToSort: '' });
 
   useEffect(() => {
@@ -111,9 +131,19 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations }
   // TODO: Could move into useEffect and listen for a change in sort direction or valueToSortBy
   // sort --> inefficient to sort on every render but fast enough for now
   const sortedTeams = _.sortBy(filteredTeams, team => {
-    // @ts-ignore
+    // @ts-ignore --> can be fixed by typing valueToSortBy with exact possible values
     return (directionToSort === '' || directionToSort === 'DESC') ? -team[valueToSortBy] : team[valueToSortBy];
   });
+
+  // TODO: Why is this slower than sorting on every render?
+  // const [sortedTeams, setSortedTeams] = useState<Array<IndividualTeamSimulationResults>>([]);
+  // useEffect(() => {
+  //   const sortedTeams = _.sortBy(filteredTeams, team => {
+  //     // @ts-ignore
+  //     return (directionToSort === '' || directionToSort === 'DESC') ? -team[valueToSortBy] : team[valueToSortBy];
+  //   });
+  //   setSortedTeams(sortedTeams);
+  // }, [directionToSort, valueToSortBy]);
 
   return (
     <React.Fragment>
@@ -143,7 +173,7 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations }
       <Table sortable celled fixed unstackable>
         <Table.Header>
           <Table.Row>
-            {/* // todo: add onClick logic */}
+            {/* TODO: add some styling for down arrow and up arrow based on ASC / DESC */}
             {_.map(INITIAL_COLUMNS_TO_SHOW, ([columnNameToShowUser, objectPropertyRelatedToColumnName]) => {
               return (
                 <Table.HeaderCell
@@ -162,12 +192,9 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations }
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {/* // TODO: Improve typing */}
           {_.map(sortedTeams, (team) => (
-            // @ts-ignore
             <Table.Row key={team.teamName}>
               {_.map(INITIAL_COLUMNS_TO_SHOW, ([columnNameToShowUser, objectPropertyRelatedToColumnName]) => {
-                // @ts-ignore
                 const [style, value] = columnMapperAndStyler(objectPropertyRelatedToColumnName, team)
                 return <Table.Cell style={style} key={columnNameToShowUser}>{value}</Table.Cell>;
               })}
