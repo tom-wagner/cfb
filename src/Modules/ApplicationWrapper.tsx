@@ -24,17 +24,17 @@ export type IndividualTeamSimulationResults = {
 
 type Conference = {
   abbreviation: string,
-  divisions: { [key: string]: Array<string> } | null,
+  divisions?: { [key: string]: Array<string> },
   id: number,
   name: string,
   short_name: string,
   teams: Array<string>,
 }
 
-export type Conferences = { [key: string]: Conference } | null;
+export type Conferences = { [key: string]: Conference };
 
 // TODO: Improve typing
-export type Teams = {} | null;
+export type Teams = {};
 export type SimulationResults = { [key: string]: IndividualTeamSimulationResults };
 export type TeamRatingsMap = { [key: string]: { [key: string]: number } };
 
@@ -47,8 +47,8 @@ type State = {
   pageStatus: PageStatusEnum,
   simulationResults: SimulationResults | null,
   numberOfSimulations: number,
-  conferences: Conferences,
-  teams: Teams,
+  conferences: Conferences | null,
+  teams: Teams | null,
 };
 
 const INITIAL_STATE = {
@@ -61,7 +61,6 @@ const INITIAL_STATE = {
 
 // type TableState = { column: string | null , data: [], direction: string | null };
 const ApplicationWrapper: React.FC = () => {
-  // TODO: Refactor into INITIAL_STATE
   const [state, setState] = useState<State>(INITIAL_STATE);
   const { pageStatus, simulationResults, numberOfSimulations, conferences, teams } = state;
 
@@ -96,8 +95,8 @@ const ApplicationWrapper: React.FC = () => {
         <SimulationTable
           simulationResults={simulationResults as SimulationResults}
           numberOfSimulations={numberOfSimulations}
-          conferences={conferences}
-          teams={teams}
+          conferences={conferences as Conferences}
+          teams={teams as Teams}
         />
       );
     default:
