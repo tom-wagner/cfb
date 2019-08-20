@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Dropdown, DropdownProps } from 'semantic-ui-react'
+import { Table, Dropdown, DropdownProps, Image, Modal, Header, Responsive } from 'semantic-ui-react'
 import _ from 'lodash';
 import { SimulationResults, IndividualTeamSimulationResults, Conferences, Team } from './ApplicationWrapper';
 import { getColorByValue } from '../utils';
@@ -9,7 +9,7 @@ import { getColorByValue } from '../utils';
 // TODO: Turn to constants
 const INITIAL_COLUMNS_TO_SHOW = [
   // [textToShowToUser, propertyOnTeamObject]
-  ['Team Name', 'teamName'],
+  ['Team Name (click on a team to see more detail)', 'teamName'],
   ['Average Power Rtg', 'avgPowerRtg'],
   ['Win Division %', 'divisionTitleWinPct'],
   ['Win Conference %', 'conferenceTitleWinPct'],
@@ -42,26 +42,46 @@ const styleByValue = (
   return {};
 }
 
-// PROOF OF CONCEPT FOR MODAL
-// const ModalExample = (teamName: string) => (
-//   <Modal trigger={<Button>{`${teamName}`}</Button>}>
-//     <Modal.Header>Select a Photo</Modal.Header>
-//     <Modal.Content>
-//       <Modal.Description>
-//         <p>We've found the following gravatar image associated with your e-mail address.</p>
-//         <p>Is it okay to use this photo?</p>
-//       </Modal.Description>
-//     </Modal.Content>
-//   </Modal>
-// )
+type TeamModalProps = { columnValuesObject: IndividualTeamSimulationResults & Team };
+const TeamModalMobile = ({ columnValuesObject }: TeamModalProps) => {
+  return <p>mobile: {columnValuesObject.teamName}</p>;
+};
+
+type TeamModalMobileProps = { columnValuesObject: IndividualTeamSimulationResults & Team };
+const TeamModal = ({ columnValuesObject }: TeamModalProps) => {
+  return <p>tablet and computer: {columnValuesObject.teamName}</p>;
+};
+
+const linkStyle = {
+  cursor: 'pointer',
+  color: '#225fb2',
+}
+
+const ModalExample = (columnValuesObject: IndividualTeamSimulationResults & Team) => {
+  return (
+    <Modal trigger={<p style={linkStyle}>{`${columnValuesObject.teamName}`}</p>} centered={false} closeIcon>
+      <Header as='h3'>
+        <Image src={columnValuesObject.logos[0]}/>{`  `}{columnValuesObject.teamName}
+      </Header>
+      <Modal.Content image>
+        <Responsive maxWidth={499}>
+          <TeamModalMobile columnValuesObject={columnValuesObject} />
+        </Responsive>
+        <Responsive minWidth={500}>
+          <TeamModal columnValuesObject={columnValuesObject} />
+        </Responsive>
+      </Modal.Content>
+    </Modal>
+  );
+};
 
 const columnMapperAndStyler = (
   columnName: string,
   columnValuesObject: IndividualTeamSimulationResults & Team,
 ) => {
   const map = {
-    // 'teamName': ModalExample(columnValuesObject.teamName),
-    'teamName': columnValuesObject.teamName,
+    'teamName': ModalExample(columnValuesObject),
+    // 'teamName': columnValuesObject.teamName,
     'avgPowerRtg': columnValuesObject.avgPowerRtg,
     'divisionTitleWinPct': columnValuesObject.divisionTitleWinPct === -1 ? 'N/A' : `${(columnValuesObject.divisionTitleWinPct * 100).toFixed(2)} %`,
     'conferenceTitleWinPct': columnValuesObject.conferenceTitleWinPct === -1 ? 'N/A' : `${(columnValuesObject.conferenceTitleWinPct * 100).toFixed(2)} %`,
@@ -145,6 +165,11 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations }
   //   setSortedTeams(sortedTeams);
   // }, [directionToSort, valueToSortBy]);
 
+  // COME BACK IF OTHER STUFF DONE:
+  // const Divisions = conferenceToShow && conferences[conferenceToShow]['divisions'] && _.map(conferences[conferenceToShow]['divisions'], (val, key) => (
+  //   <Button>{key}</Button>
+  // ));
+
   return (
     <React.Fragment>
       <Dropdown
@@ -156,6 +181,7 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations }
         // @ts-ignore
         onChange={(e: React.SyntheticEvent<HTMLElement>, { value }: DropdownProps) => updateDropdownState({ divisionToShow: '', conferenceToShow: value })}
       />
+      {/* // TODO: Move below on mobile or make smaller */}
       {conferenceToShow && conferences[conferenceToShow]['divisions'] && (
         <Dropdown
           placeholder='Filter by division'
@@ -168,6 +194,13 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations }
           onChange={(e: React.SyntheticEvent<HTMLElement>, { value }: DropdownProps) => updateDropdownState({ divisionToShow: value, conferenceToShow })}
         />
       )}
+      {/* COME BACK TO DIVISION BUTTONS VS DROPDOWN IF OTHER STUFF DONE */}
+      {/* {conferenceToShow && conferences[conferenceToShow]['divisions'] && (
+        <React.Fragment>
+          <p>Filter by division:</p>
+          {Divisions}
+        </React.Fragment>
+      )} */}
       {/* TODO: Add a note about sorting */}
       {/* TODO: Add a note about clicking on the team names */}
       <Table sortable celled fixed unstackable>

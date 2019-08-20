@@ -3,21 +3,37 @@ import { Menu, Responsive } from 'semantic-ui-react';
 import ApplicationWrapper from './Modules/ApplicationWrapper';
 
 const App: React.FC = () => (
-  <Responsive style={{ margin: '10px 60px' }}>
+  <Responsive style={{ margin: '10px 10px' }}>
     {/* // TODO: Add styling to navbar */}
-    <Menu>
+    {/* // TODO: Change navbar to dropdown on mobile */}
+    {/* https://codesandbox.io/s/325y47xk36 */}
+    {/* <Responsive maxWidth={499}>
       <Menu.Item>
         Home
       </Menu.Item>
-      <Menu.Item >
-        About
-      </Menu.Item>
-      <Menu.Item>
-        FAQ
-      </Menu.Item>
-      <Menu.Item >
-        Report a bug
-      </Menu.Item>
+      <Dropdown
+        placeholder='Select Friend'
+        fluid
+        selection
+        options={_.map(['About', 'FAQ', 'Report a bug', 'Buy me a coffee'], item => ({ key: item, text: item, value: item }))}
+      />
+    </Responsive> */}
+    <Menu>
+        <Menu.Item>
+          Home
+        </Menu.Item>
+        <Menu.Item >
+          About
+        </Menu.Item>
+        <Menu.Item>
+          FAQ
+        </Menu.Item>
+        {/* <Menu.Item >
+          Report a bug
+        </Menu.Item> */}
+        {/* <Menu.Item>
+          Buy me a coffee
+        </Menu.Item> */}
       <Menu.Item position="right">
         simulate.io
       </Menu.Item>

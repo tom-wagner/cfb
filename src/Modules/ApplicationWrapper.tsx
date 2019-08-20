@@ -26,6 +26,7 @@ export type IndividualTeamSimulationResults = {
   totalWins: SeasonSimulationForOneTeam,
   avgPowerRtg: number,
   powerRtgs: { [key: string]: number },
+  logos: Array<string>
 };
 
 type Conference = {
@@ -70,7 +71,6 @@ const ApplicationWrapper: React.FC = () => {
   const { pageStatus, simulationResults, numberOfSimulations, conferences } = state;
 
   useAsyncEffect(async () => {
-    console.log('firing async effect');
     try {
       // @ts-ignore
       const [{ numberOfSimulations, simulationResults }, conferences, teams]: [SimulationResponse, Conferences, Teams] = await Promise.all([
@@ -78,7 +78,6 @@ const ApplicationWrapper: React.FC = () => {
         getConferences(),
         getTeams(),
       ]);
-      console.log({ teams });
       const mergedSimulationsAndTeamsWithTeamName = _.mapValues(simulationResults, (val, key) => _.merge(val, _.get(teams, key), { teamName: key }));
       setState({ numberOfSimulations, simulationResults: mergedSimulationsAndTeamsWithTeamName, conferences, pageStatus: PageStatusEnum.HAS_DATA });
     } catch (e) {
