@@ -14,6 +14,7 @@ export enum PageStatusEnum {
   ERROR = 'ERROR'
 }
 
+export type Game = {};
 type SeasonSimulationForOneTeam = { [key: string]: number }
 export type IndividualTeamSimulationResults = {
   teamName: string,
@@ -27,6 +28,10 @@ export type IndividualTeamSimulationResults = {
   avgPowerRtg: number,
   powerRtgs: { [key: string]: number },
   logos: Array<string>
+  conference: string,
+  division: string,
+  rankings: {},
+  schedule: Array<Game>,
 };
 
 type Conference = {
