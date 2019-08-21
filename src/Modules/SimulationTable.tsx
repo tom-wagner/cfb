@@ -67,6 +67,17 @@ const getWinProbability = (game: Game, teamName: string) => {
   return `${(win_pct * 100).toFixed(0)}%`;
 };
 
+const exampleTextFn = (idx: number, cumulativeLikelihoods: Array<number>, numberOfSimulations: number, teamName: string) => {
+  const percentage = (cumulativeLikelihoods[idx] / numberOfSimulations * 100).toFixed(1);
+  const record = `${idx} - ${12 - idx}`
+  return (
+    `For example: ${percentage}% next to ${record} in the "going ____ or better" column means ${teamName} has a ${percentage}% change of winning ${idx} or more regular season games.`
+  );
+};
+
+const SCHEDULE_HEADERS = ['Week', 'Date', 'Opponent', 'Opponent Avg Power Rating (rank)', 'Projected Margin', 'Win Probability'] as const;
+const SCHEDULE_TABLE_WIDTHS = ['1', '2', '3', '3', '3', '3'] as const;
+
 const TeamModal = ({ columnValuesObject, simulationResults, numberOfSimulations }: TeamModalProps) => {
   const likelihoods = _.map(_.range(0, 13), x => columnValuesObject['totalWins'][x])
   let [occurrencesCount, cumulativeLikelihoods] = [0, []];
@@ -75,6 +86,9 @@ const TeamModal = ({ columnValuesObject, simulationResults, numberOfSimulations 
     occurrencesCount += numberOfTimesTeamWonXGames;
   });
 
+  const firstIndexUnderSeventyPercent = _.findIndex(cumulativeLikelihoods, (val, idx) => (val / numberOfSimulations) <= 0.7);
+  const exampleText = exampleTextFn(firstIndexUnderSeventyPercent, cumulativeLikelihoods, numberOfSimulations, columnValuesObject.teamName);
+  
   return (
     <Grid padded divided>
       <Grid.Row>
@@ -98,6 +112,7 @@ const TeamModal = ({ columnValuesObject, simulationResults, numberOfSimulations 
       <Grid.Row>
         <h2>Power Ratings</h2>
       </Grid.Row>
+      // TODO: Turn into a map
       <Grid.Row>
         <Grid.Column width={4}>
           <p style={avgPowerHeaderStyle}>Average Power Rating (rank)</p>
@@ -138,7 +153,7 @@ const TeamModal = ({ columnValuesObject, simulationResults, numberOfSimulations 
         <Table celled fixed unstackable>
           <Table.Header>
             <Table.Row>
-              {_.map(['Week', 'Date', 'Opponent', 'Opponent Avg Power Rating (rank)', 'Projected Margin', 'Win Probability'], x => <Table.HeaderCell>{x}</Table.HeaderCell>)}
+              {_.map(SCHEDULE_HEADERS, (header, idx) => <Table.HeaderCell width={SCHEDULE_TABLE_WIDTHS[idx]}>{header}</Table.HeaderCell>)}
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -146,12 +161,12 @@ const TeamModal = ({ columnValuesObject, simulationResults, numberOfSimulations 
                 const teamName = columnValuesObject.teamName;
                 return (
                   <Table.Row>
-                    <Table.Cell>{idx + 1}</Table.Cell>
-                    <Table.Cell>{moment(new Date(game['start_date'])).format('ddd, MMM D')}</Table.Cell>
-                    <Table.Cell>{getOpponent(game, teamName)}</Table.Cell>
-                    <Table.Cell>{getOpponentPowerRatingAndRank(game, teamName, simulationResults)}</Table.Cell>
-                    <Table.Cell>{getProjectedMargin(game, teamName)}</Table.Cell>
-                    <Table.Cell>{getWinProbability(game, teamName)}</Table.Cell>
+                    <Table.Cell width={SCHEDULE_TABLE_WIDTHS[0]}>{idx + 1}</Table.Cell>
+                    <Table.Cell width={SCHEDULE_TABLE_WIDTHS[1]}>{moment(new Date(game['start_date'])).format('ddd, MMM D')}</Table.Cell>
+                    <Table.Cell width={SCHEDULE_TABLE_WIDTHS[2]}>{getOpponent(game, teamName)}</Table.Cell>
+                    <Table.Cell width={SCHEDULE_TABLE_WIDTHS[3]}>{getOpponentPowerRatingAndRank(game, teamName, simulationResults)}</Table.Cell>
+                    <Table.Cell width={SCHEDULE_TABLE_WIDTHS[4]}>{getProjectedMargin(game, teamName)}</Table.Cell>
+                    <Table.Cell width={SCHEDULE_TABLE_WIDTHS[5]}>{getWinProbability(game, teamName)}</Table.Cell>
                   </Table.Row>
                 );
               })}
@@ -160,7 +175,7 @@ const TeamModal = ({ columnValuesObject, simulationResults, numberOfSimulations 
       </Grid.Row>
       <Divider />
       <Grid.Row>
-        <h2>Likelihood of winning X+ regular season games</h2>
+        <h2>Regular Season Simulation Detail</h2>
       </Grid.Row>
       <Grid.Row>
         <Message info>
@@ -168,26 +183,29 @@ const TeamModal = ({ columnValuesObject, simulationResults, numberOfSimulations 
             For each simulated season every team is assigned a final record. The simulated seasons can be combined
             together to determine the likelihood a given teams ends the season with X or more regular season wins.
           </p>
-          <p>Ex: 77% under 8+ means a given team has a 77% change of winning 8 or more regular season games</p>
+          {/* TODO: Make dynamic and tied to actual numbers */}
+          <p>{exampleText}</p>
         </Message>
       </Grid.Row>
       <Grid.Row>
-        <Table celled style={{ width: '300px' }}>
+        <Table celled style={{ width: '500px' }}>
           <Table.Header>
             <Table.Row>
-              {_.map(['Likelihood of winning X or more games', 'Likelihood'], x => <Table.HeaderCell>{x}</Table.HeaderCell>)}
+              <Table.HeaderCell />
+              <Table.HeaderCell textAlign='center' colSpan='2'>Likelihood of...</Table.HeaderCell>
+            </Table.Row>
+            <Table.Row>
+              {_.map(['Record', 'finishing exactly ____', 'going ____ or better'], x => <Table.HeaderCell>{x}</Table.HeaderCell>)}
             </Table.Row>
           </Table.Header>
           <Table.Body>
-              {_.map(cumulativeLikelihoods, (game, idx) => {
-                const teamName = columnValuesObject.teamName;
-                return (
-                  <Table.Row>
-                    <Table.Cell>{`${idx}+`}</Table.Cell>
-                    <Table.Cell>{cumulativeLikelihoods[idx]}</Table.Cell>
-                  </Table.Row>
-                );
-              })}
+              {_.map(cumulativeLikelihoods, (game, idx) => (
+                <Table.Row>
+                  <Table.Cell width={2}>{`${idx} - ${12  - idx}`}</Table.Cell>
+                  <Table.Cell textAlign='center' width={4}>{(likelihoods[idx] / numberOfSimulations * 100).toFixed(1)}%</Table.Cell>
+                  <Table.Cell textAlign='center' width={4}>{(cumulativeLikelihoods[idx] / numberOfSimulations * 100).toFixed(1)}%</Table.Cell>
+                </Table.Row>
+              ))}
           </Table.Body>
         </Table>
       </Grid.Row>
