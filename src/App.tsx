@@ -1,27 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Menu, Responsive } from 'semantic-ui-react';
 import ApplicationWrapper from './Modules/ApplicationWrapper';
+import FAQ from './Modules/FAQ';
 
-const App: React.FC = () => (
-  <Responsive style={{ margin: '10px 10px' }}>
-    {/* // TODO: Add styling to navbar */}
-    {/* https://codesandbox.io/s/325y47xk36 */}
-    {/* <Responsive maxWidth={499}>
-      <Menu.Item>
-        Home
-      </Menu.Item>
-      <Dropdown
-        placeholder='Select Friend'
-        fluid
-        selection
-        options={_.map(['About', 'FAQ', 'Report a bug', 'Buy me a coffee'], item => ({ key: item, text: item, value: item }))}
-      />
-    </Responsive> */}
-    <Menu>
-        <Menu.Item>
+enum PageToShow {
+  TABLE = 'TABLE',
+  FAQ = 'FAQ'
+}
+
+const App: React.FC = () => {
+  const [pageToShow, setPageToShow] = useState(PageToShow.TABLE);
+  return (
+    <Responsive style={{ margin: '15px 10px' }}>
+      {/* // TODO: Add styling to navbar */}
+      <Menu>
+        <Menu.Item onClick={() => setPageToShow(PageToShow.TABLE)} active={pageToShow === PageToShow.TABLE}>
           Home
         </Menu.Item>
-        <Menu.Item>
+        <Menu.Item onClick={() => setPageToShow(PageToShow.FAQ)} active={pageToShow === PageToShow.FAQ}>
           FAQ
         </Menu.Item>
         {/* LATER */}
@@ -31,13 +27,16 @@ const App: React.FC = () => (
         {/* <Menu.Item>
           Buy me a coffee
         </Menu.Item> */}
-      <Menu.Item position="right">
-        {/* # TODO: pick name */}
-        simulate.io
-      </Menu.Item>
-    </Menu>
-    <ApplicationWrapper />
-  </Responsive>
-);
+        <Menu.Item position="right">
+          {/* # TODO: pick name */}
+          simulate.io
+        </Menu.Item>
+      </Menu>
+      {/* // TODO: Move the wrapper/centering logic out here */}
+      {pageToShow === PageToShow.TABLE && <ApplicationWrapper />}
+      {pageToShow === PageToShow.FAQ && <FAQ />}
+    </Responsive>
+  );
+};
 
 export default App;
