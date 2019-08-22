@@ -457,8 +457,14 @@ const getDivisionDropdownOptions = (conferences: Conferences, conferenceToShow: 
   return [];
 }
 
+type SortState = { valueToSortBy: string, directionByColumn: { avgPowerRtg: string, divisionTitleWinPct: string, conferenceTitleWinPct: string } };
+const INITIAL_SORTING_STATE = { 
+  valueToSortBy: 'avgPowerRtg',
+  directionByColumn: { avgPowerRtg: 'descending', divisionTitleWinPct: '', conferenceTitleWinPct: '' },
+};
+
 type DropdownState = { conferenceToShow: string, divisionToShow: string };
-type SortState = { valueToSortBy: string, directionToSort: string };
+const INITIAL_DROPDOWN_STATE = { conferenceToShow: '', divisionToShow: '' };
 
 // TODO: By the time we get here these should not be null --> which should solve some typescript issues
 type SimulationTableProps = { simulationResults: SimulationResults, conferences: Conferences, numberOfSimulations: number };
@@ -466,12 +472,15 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations }
   // TODO: Do I want column flexibility in V1?
   // const [columnsToShow, setColumnsToShow] = useState(INITIAL_COLUMNS_TO_SHOW);
 
-  const [{ conferenceToShow, divisionToShow }, updateDropdownState] = useState<DropdownState>({ conferenceToShow: '', divisionToShow: '' });
+  const [{ conferenceToShow, divisionToShow }, updateDropdownState] = useState<DropdownState>(INITIAL_DROPDOWN_STATE);
   const [{ filteredTeams, conferenceDropdownOptions, divisionDropdownOptions }, setState] = useState({
     filteredTeams: simulationResults, conferenceDropdownOptions: [], divisionDropdownOptions: [],
   });
   // TODO: State needs to be maintained by each column
-  const [{ valueToSortBy, directionToSort }, setValueToSortBy] = useState<SortState>({ valueToSortBy: 'avgPowerRtg', directionToSort: '' });
+  const [{ valueToSortBy, directionByColumn }, setValueToSortBy] = useState<SortState>(INITIAL_SORTING_STATE);
+
+  console.log(valueToSortBy);
+  console.log(directionByColumn);
 
   useEffect(() => {
     const filteredTeams = determineTeamsToRender(simulationResults, conferences, conferenceToShow, divisionToShow);
@@ -481,11 +490,9 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations }
     setState({ filteredTeams, conferenceDropdownOptions, divisionDropdownOptions });
   }, [conferenceToShow, divisionToShow, conferences, simulationResults]);
 
-  // TODO: Could move into useEffect and listen for a change in sort direction or valueToSortBy
-  // sort --> inefficient to sort on every render but fast enough for now
   const sortedTeams = _.sortBy(filteredTeams, team => {
-    // @ts-ignore --> can be fixed by typing valueToSortBy with exact possible values
-    return (directionToSort === '' || directionToSort === 'DESC') ? -team[valueToSortBy] : team[valueToSortBy];
+    // TODO: Fix sorting bug for teamName
+    return (directionByColumn[valueToSortBy] === '' || directionByColumn[valueToSortBy] === 'descending') ? -team[valueToSortBy] : team[valueToSortBy];
   });
 
   // TODO: Why is this slower than sorting on every render?
@@ -493,15 +500,10 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations }
   // useEffect(() => {
   //   const sortedTeams = _.sortBy(filteredTeams, team => {
   //     // @ts-ignore
-  //     return (directionToSort === '' || directionToSort === 'DESC') ? -team[valueToSortBy] : team[valueToSortBy];
+  //     return (directionToSort === '' || directionToSort === 'descending') ? -team[valueToSortBy] : team[valueToSortBy];
   //   });
   //   setSortedTeams(sortedTeams);
   // }, [directionToSort, valueToSortBy]);
-
-  // COME BACK IF OTHER STUFF DONE:
-  // const Divisions = conferenceToShow && conferences[conferenceToShow]['divisions'] && _.map(conferences[conferenceToShow]['divisions'], (val, key) => (
-  //   <Button>{key}</Button>
-  // ));
 
   return (
     <React.Fragment>
@@ -547,17 +549,28 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations }
       <Table sortable celled unstackable fixed>
         <Table.Header>
           <Table.Row>
-            {/* TODO: add some styling for down arrow and up arrow based on ASC / DESC */}
+            {/* TODO: add some styling for down arrow and up arrow based on ascending / descending */}
             {_.map(INITIAL_COLUMNS_TO_SHOW, ([columnNameToShowUser, objectPropertyRelatedToColumnName]) => {
               return (
                 <Table.HeaderCell
                   key={columnNameToShowUser}
+                  sorted={valueToSortBy === objectPropertyRelatedToColumnName ? directionByColumn[valueToSortBy] : null}
                   onClick={(e: React.ChangeEvent) => setValueToSortBy(
                     {
                       valueToSortBy: objectPropertyRelatedToColumnName,
-                      directionToSort: directionToSort === 'ASC' || directionToSort === '' ? 'DESC' : 'ASC',
+                      // directionByColumn: // directionToSort === 'ascending' || directionToSort === '' ? 'descending' : 'ascending',
+                      directionByColumn: {
+                        ...directionByColumn,
+                        [valueToSortBy]: '',
+                        [objectPropertyRelatedToColumnName]: (
+                          (directionByColumn[objectPropertyRelatedToColumnName] === 'ascending'
+                            || directionByColumn[objectPropertyRelatedToColumnName] === '')
+                            ? 'descending'
+                            : 'ascending'
+                        ),
+                      }
                     }
-                  )}
+                    )}
                 >
                   {columnNameToShowUser}
                 </Table.HeaderCell>
