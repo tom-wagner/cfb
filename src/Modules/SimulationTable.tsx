@@ -44,7 +44,7 @@ const linkStyle = {
   color: '#225fb2',
 }
 
-const ModalExample = (columnValuesObject: IndividualTeamSimulationResults & Team, simulationResults: SimulationResults, numberOfSimulations: number) => {
+const TeamModal = (columnValuesObject: IndividualTeamSimulationResults & Team, simulationResults: SimulationResults, numberOfSimulations: number) => {
   return (
     <Modal
       trigger={<p style={linkStyle}>{`${columnValuesObject.teamName}`}</p>}
@@ -106,7 +106,7 @@ const columnMapperAndStyler = (
   numberOfSimulations: number,
 ) => {
   const map = {
-    'teamName': ModalExample(columnValuesObject, simulationResults, numberOfSimulations),
+    'teamName': TeamModal(columnValuesObject, simulationResults, numberOfSimulations),
     'avgPowerRtg': columnValuesObject.avgPowerRtg,
     'divisionTitleWinPct': columnValuesObject.divisionTitleWinPct === -1 ? 'N/A' : `${(columnValuesObject.divisionTitleWinPct * 100).toFixed(2)} %`,
     'conferenceTitleWinPct': columnValuesObject.conferenceTitleWinPct === -1 ? 'N/A' : `${(columnValuesObject.conferenceTitleWinPct * 100).toFixed(2)} %`,
@@ -180,6 +180,8 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations }
   });
 
   return (
+    // TODO: Show a message about how current simulation results are
+    // TODO: Show the number of simulations
     <React.Fragment>
       <div id="outer-box" style={{ display: 'flex', alignItems: 'flex-start', flexDirection: 'column' }}>
         <div id="inner-box-to-be-centered" style={{ alignSelf: 'center', maxWidth: '1400px' }}>

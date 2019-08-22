@@ -51,17 +51,23 @@ export type TeamRatingsMap = { [key: string]: { [key: string]: number } };
 type SimulationResponse = {
   numberOfSimulations: number,
   simulationResults: SimulationResults,
+  lastUpdated: string,
+  showOutdatedWarningStartTime: string,
 };
 
 type State = {
   pageStatus: PageStatusEnum,
+  conferences: Conferences | null,
   simulationResults: SimulationResults | null,
   numberOfSimulations: number,
-  conferences: Conferences | null,
+  lastUpdated: string,
+  showOutdatedWarningStartTime: string,
 };
 
 const INITIAL_STATE = {
   pageStatus: PageStatusEnum.LOADING,
+  lastUpdated: '',
+  showOutdatedWarningStartTime: '',
   teams: null,
   conferences: null,
   simulationResults: null,
@@ -75,13 +81,17 @@ const ApplicationWrapper: React.FC = () => {
   useAsyncEffect(async () => {
     try {
       // @ts-ignore
-      const [{ numberOfSimulations, simulationResults }, conferences, teams]: [SimulationResponse, Conferences, Teams] = await Promise.all([
+      const [
+        { numberOfSimulations, simulationResults, lastUpdated, showOutdatedWarningStartTime },
+        conferences,
+        teams,
+      ]: [SimulationResponse, Conferences, Array<Team>] = await Promise.all([
         getSimulationResults(),
         getConferences(),
         getTeams(),
       ]);
       const mergedSimulationsAndTeamsWithTeamName = _.mapValues(simulationResults, (val, key) => _.merge(val, _.get(teams, key), { teamName: key }));
-      setState({ numberOfSimulations, simulationResults: mergedSimulationsAndTeamsWithTeamName, conferences, pageStatus: PageStatusEnum.HAS_DATA });
+      setState({ lastUpdated, showOutdatedWarningStartTime, numberOfSimulations, simulationResults: mergedSimulationsAndTeamsWithTeamName, conferences, pageStatus: PageStatusEnum.HAS_DATA });
     } catch (e) {
       // TODO: handle error
       // set status error
@@ -100,6 +110,7 @@ const ApplicationWrapper: React.FC = () => {
       return <p>error</p>
     case PageStatusEnum.HAS_DATA:
       return (
+        // TODO: Pass lastUpdated and showWarning
         <SimulationTable
           // @ts-ignore
           simulationResults={simulationResults as SimulationResults}
