@@ -11,7 +11,7 @@ import { avgPowerHeaderStyle, avgPowerRankStyle, ratingRankStyle, ratingHeaderSt
 // TODO: Turn to constants
 const INITIAL_COLUMNS_TO_SHOW = [
   // [textToShowToUser, propertyOnTeamObject]
-  ['Team Name (click to see more detail)', 'teamName'],
+  ['Team', 'teamName'],
   ['Average Power Rtg', 'avgPowerRtg'],
   ['Win Division %', 'divisionTitleWinPct'],
   ['Win Conference %', 'conferenceTitleWinPct'],
@@ -45,9 +45,6 @@ const styleByValue = (
 }
 
 type TeamModalProps = { columnValuesObject: IndividualTeamSimulationResults & Team, simulationResults: SimulationResults, numberOfSimulations: number };
-const TeamModalMobile = ({ columnValuesObject }: TeamModalProps) => {
-  return <p>mobile: {columnValuesObject.teamName}</p>;
-};
 
 const getOpponent = (game: Game, teamName: string) => {
   return (game['home_team'] === teamName) ? `vs. ${game['away_team']}` : `@ ${game['home_team']}`
@@ -71,12 +68,161 @@ const exampleTextFn = (idx: number, cumulativeLikelihoods: Array<number>, number
   const percentage = (cumulativeLikelihoods[idx] / numberOfSimulations * 100).toFixed(1);
   const record = `${idx} - ${12 - idx}`
   return (
-    `For example: ${percentage}% next to ${record} in the "going ____ or better" column means ${teamName} has a ${percentage}% change of winning ${idx} or more regular season games.`
+    `For example: ${percentage}% in the "going ____ or better" column for the row ${record} means ${teamName} has a ${percentage}% change of winning ${idx} or more regular season games.`
   );
 };
 
-const SCHEDULE_HEADERS = ['Week', 'Date', 'Opponent', 'Opponent Avg Power Rating (rank)', 'Projected Margin', 'Win Probability'] as const;
-const SCHEDULE_TABLE_WIDTHS = ['1', '2', '3', '3', '3', '3'] as const;
+const MOBILE_SCHEDULE_HEADERS = ['Opponent', 'Proj. Margin', 'Win %'] as const;
+const MOBILE_SCHEDULE_TABLE_WIDTHS = ['3', '2', '2'] as const;
+
+const SCHEDULE_HEADERS = ['Week', 'Date', 'Opponent', 'Opp. Avg Power Rtg. (rank)', 'Projected Margin', 'Win Probability'] as const;
+const SCHEDULE_TABLE_WIDTHS = ['1', '3', '3', '2', '2', '2'] as const;
+
+
+const TeamModalMobile = ({ columnValuesObject, simulationResults, numberOfSimulations }: TeamModalProps) => {
+  const likelihoods = _.map(_.range(0, 13), x => columnValuesObject['totalWins'][x])
+  let [occurrencesCount, cumulativeLikelihoods] = [0, []];
+  _.forEach(likelihoods, numberOfTimesTeamWonXGames => {
+    cumulativeLikelihoods.push(numberOfSimulations - occurrencesCount);
+    occurrencesCount += numberOfTimesTeamWonXGames;
+  });
+
+  const firstIndexUnderSeventyPercent = _.findIndex(cumulativeLikelihoods, (val, idx) => (val / numberOfSimulations) <= 0.7);
+  const exampleText = exampleTextFn(firstIndexUnderSeventyPercent, cumulativeLikelihoods, numberOfSimulations, columnValuesObject.teamName);
+
+  return (
+    <Grid stackable>
+      <Grid.Row>
+        <Message warning style={{ margin: '10px 0' }} size='mini'>
+          <Icon name='sync alternate' />
+            Rotate your phone to see more information
+        </Message>
+      </Grid.Row>
+      {/* TEAM RATINGS COMPONENT */}
+      <Grid.Row>
+        <h2>Power Ratings</h2>
+      </Grid.Row>
+      <Grid.Row>
+        <Message info style={{ margin: '15px 0' }} size='mini'>
+          <p>See the FAQ for more info on how these power ratings were used to run the simulation.</p>
+        </Message>
+      </Grid.Row>
+      {/* // TODO: Turn into a map */}
+      <Grid.Row>
+        <Grid.Column width={1}>
+          <p style={avgPowerHeaderStyle}>Average Power Rating (rank)</p>
+          {/*
+            // @ts-ignore */}
+          <p style={avgPowerRankStyle}>{columnValuesObject.avgPowerRtg} ({columnValuesObject.rankings.avg_power_rtg})</p>
+        </Grid.Column>
+      </Grid.Row>
+      <Grid.Row>
+        <Grid.Column width={1}>
+          <p style={ratingHeaderStyle}>ESPN FPI (rank)</p>
+          {/*
+            // @ts-ignore */}
+          <p style={ratingRankStyle}>{columnValuesObject.powerRtgs.FPI} ({columnValuesObject.rankings.FPI})</p>
+        </Grid.Column>
+        <Grid.Column>
+          <p style={ratingHeaderStyle}>Entropy (rank)</p>
+          {/*
+            // @ts-ignore */}
+          <p style={ratingRankStyle}>{columnValuesObject.powerRtgs.ENTROPY} ({columnValuesObject.rankings.ENTROPY})</p>
+        </Grid.Column>
+      </Grid.Row>
+      {/* <Grid.Row>
+        <Grid.Column>
+          <p style={ratingHeaderStyle}>Entropy (rank)</p>
+          <p style={ratingRankStyle}>{columnValuesObject.powerRtgs.ENTROPY} ({columnValuesObject.rankings.ENTROPY})</p>
+        </Grid.Column>
+      </Grid.Row> */}
+      <Grid.Row>
+        <Grid.Column>
+          <p style={ratingHeaderStyle}>S&amp;P+ (rank)</p>
+          {/*
+            // @ts-ignore */}
+          <p style={ratingRankStyle}>{columnValuesObject.powerRtgs.SP_PLUS} ({columnValuesObject.rankings.SP_PLUS})</p>
+        </Grid.Column>
+        <Grid.Column>
+          <p style={ratingHeaderStyle}>Massey (rank)</p>
+          {/*
+            // @ts-ignore */}
+          <p style={ratingRankStyle}>{columnValuesObject.powerRtgs.MASSEY} ({columnValuesObject.rankings.MASSEY})</p>
+        </Grid.Column>
+      </Grid.Row>
+      {/* <Grid.Row>
+        <Grid.Column>
+          <p style={ratingHeaderStyle}>Massey (rank)</p>
+          <p style={ratingRankStyle}>{columnValuesObject.powerRtgs.MASSEY} ({columnValuesObject.rankings.MASSEY})</p>
+        </Grid.Column>
+      </Grid.Row> */}
+      <Divider />
+      <Grid.Row>
+        <h2>Schedule</h2>
+      </Grid.Row>
+      <Grid.Row>
+        <Table celled fixed unstackable compact>
+          <Table.Header>
+            <Table.Row>
+              {_.map(MOBILE_SCHEDULE_HEADERS, (header, idx) => <Table.HeaderCell width={MOBILE_SCHEDULE_TABLE_WIDTHS[idx]}>{header}</Table.HeaderCell>)}
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {_.map(columnValuesObject.schedule, (game) => {
+              const teamName = columnValuesObject.teamName;
+              return (
+                <Table.Row>
+                  {/* <Table.Cell width={MOBILE_SCHEDULE_TABLE_WIDTHS[0]}>{idx + 1}</Table.Cell> */}
+                  {/* <Table.Cell width={MOBILE_SCHEDULE_TABLE_WIDTHS[1]}>{moment(new Date(game['start_date'])).format('ddd, MMM D')}</Table.Cell> */}
+                  <Table.Cell width={MOBILE_SCHEDULE_TABLE_WIDTHS[0]}>{getOpponent(game, teamName)}</Table.Cell>
+                  {/* <Table.Cell width={MOBILE_SCHEDULE_TABLE_WIDTHS[3]}>{getOpponentPowerRatingAndRank(game, teamName, simulationResults)}</Table.Cell> */}
+                  <Table.Cell width={MOBILE_SCHEDULE_TABLE_WIDTHS[1]}>{getProjectedMargin(game, teamName)}</Table.Cell>
+                  <Table.Cell width={MOBILE_SCHEDULE_TABLE_WIDTHS[2]}>{getWinProbability(game, teamName)}</Table.Cell>
+                </Table.Row>
+              );
+            })}
+          </Table.Body>
+        </Table>
+      </Grid.Row>
+      <Divider />
+      <Grid.Row>
+        <h2>Regular Season Simulation Detail</h2>
+      </Grid.Row>
+      <Grid.Row>
+        <Message info>
+          <p>
+            For each simulated season every team is assigned a final record. The simulated seasons can be combined
+            together to determine the likelihood a given teams ends the season with X or more regular season wins.
+          </p>
+          {/* TODO: Make dynamic and tied to actual numbers */}
+          <p>{exampleText}</p>
+        </Message>
+      </Grid.Row>
+      <Grid.Row>
+        <Table celled compact size='small' unstackable>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell />
+              <Table.HeaderCell textAlign='center' colSpan='2'>Likelihood of...</Table.HeaderCell>
+            </Table.Row>
+            <Table.Row>
+              {_.map(['Record', 'finishing exactly ____', 'going ____ or better'], x => <Table.HeaderCell>{x}</Table.HeaderCell>)}
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {_.map(cumulativeLikelihoods, (game, idx) => (
+              <Table.Row>
+                <Table.Cell width={2}>{`${idx} - ${12 - idx}`}</Table.Cell>
+                <Table.Cell textAlign='center' width={4}>{(likelihoods[idx] / numberOfSimulations * 100).toFixed(1)}%</Table.Cell>
+                <Table.Cell textAlign='center' width={4}>{(cumulativeLikelihoods[idx] / numberOfSimulations * 100).toFixed(1)}%</Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
+      </Grid.Row>
+    </Grid>
+  );
+};
 
 const TeamModal = ({ columnValuesObject, simulationResults, numberOfSimulations }: TeamModalProps) => {
   const likelihoods = _.map(_.range(0, 13), x => columnValuesObject['totalWins'][x])
@@ -88,7 +234,7 @@ const TeamModal = ({ columnValuesObject, simulationResults, numberOfSimulations 
 
   const firstIndexUnderSeventyPercent = _.findIndex(cumulativeLikelihoods, (val, idx) => (val / numberOfSimulations) <= 0.7);
   const exampleText = exampleTextFn(firstIndexUnderSeventyPercent, cumulativeLikelihoods, numberOfSimulations, columnValuesObject.teamName);
-  
+
   return (
     <Grid padded divided>
       <Grid.Row>
@@ -96,23 +242,24 @@ const TeamModal = ({ columnValuesObject, simulationResults, numberOfSimulations 
           <Message.Header>What are these "power ratings" and how are they used?</Message.Header>
           {/* TODO: Clean up --> and add note to FAQ linking to each of the rating systems, as well as the ranking of them */}
           <p>
-            The simulations have been run using the "Average Power Rating", which is the average of the four power 
-            rating systems outlined below. At a high level, these power ratings predict a team's projected margin 
-            of victory or defeat against any given opponent, which is then converted to a "Win Likelihood" for 
-            each game on their schedule.
+            The simulations have been run using the "Average Power Rating", which is the average of the four power
+            rating systems outlined below.
+          </p>
+          <p>
+            See the FAQ for more info.
           </p>
         </Message>
-        <Message negative>
+        {/* <Message negative>
           <Icon name='exclamation' />
-            Disclaimer: We are injecting any subjectivity as to whether your favorite team is good or bad.
+          Disclaimer: We are injecting any subjectivity as to whether your favorite team is good or bad.
             <p>Instead, we are using well-respected predictive systems to drive the simulation.</p>
-        </Message>
+        </Message> */}
       </Grid.Row>
       {/* TEAM RATINGS COMPONENT */}
       <Grid.Row>
         <h2>Power Ratings</h2>
       </Grid.Row>
-      // TODO: Turn into a map
+      {/* // TODO: Turn into a map */}
       <Grid.Row>
         <Grid.Column width={4}>
           <p style={avgPowerHeaderStyle}>Average Power Rating (rank)</p>
@@ -150,26 +297,26 @@ const TeamModal = ({ columnValuesObject, simulationResults, numberOfSimulations 
         <h2>Schedule</h2>
       </Grid.Row>
       <Grid.Row>
-        <Table celled fixed unstackable>
+        <Table celled fixed unstackable compact size='small'>
           <Table.Header>
             <Table.Row>
               {_.map(SCHEDULE_HEADERS, (header, idx) => <Table.HeaderCell width={SCHEDULE_TABLE_WIDTHS[idx]}>{header}</Table.HeaderCell>)}
             </Table.Row>
           </Table.Header>
           <Table.Body>
-              {_.map(columnValuesObject.schedule, (game, idx) => {
-                const teamName = columnValuesObject.teamName;
-                return (
-                  <Table.Row>
-                    <Table.Cell width={SCHEDULE_TABLE_WIDTHS[0]}>{idx + 1}</Table.Cell>
-                    <Table.Cell width={SCHEDULE_TABLE_WIDTHS[1]}>{moment(new Date(game['start_date'])).format('ddd, MMM D')}</Table.Cell>
-                    <Table.Cell width={SCHEDULE_TABLE_WIDTHS[2]}>{getOpponent(game, teamName)}</Table.Cell>
-                    <Table.Cell width={SCHEDULE_TABLE_WIDTHS[3]}>{getOpponentPowerRatingAndRank(game, teamName, simulationResults)}</Table.Cell>
-                    <Table.Cell width={SCHEDULE_TABLE_WIDTHS[4]}>{getProjectedMargin(game, teamName)}</Table.Cell>
-                    <Table.Cell width={SCHEDULE_TABLE_WIDTHS[5]}>{getWinProbability(game, teamName)}</Table.Cell>
-                  </Table.Row>
-                );
-              })}
+            {_.map(columnValuesObject.schedule, (game, idx) => {
+              const teamName = columnValuesObject.teamName;
+              return (
+                <Table.Row>
+                  <Table.Cell width={SCHEDULE_TABLE_WIDTHS[0]}>{idx + 1}</Table.Cell>
+                  <Table.Cell width={SCHEDULE_TABLE_WIDTHS[1]}>{moment(new Date(game['start_date'])).format('ddd, MMM D')}</Table.Cell>
+                  <Table.Cell width={SCHEDULE_TABLE_WIDTHS[2]}>{getOpponent(game, teamName)}</Table.Cell>
+                  <Table.Cell width={SCHEDULE_TABLE_WIDTHS[3]}>{getOpponentPowerRatingAndRank(game, teamName, simulationResults)}</Table.Cell>
+                  <Table.Cell width={SCHEDULE_TABLE_WIDTHS[4]}>{getProjectedMargin(game, teamName)}</Table.Cell>
+                  <Table.Cell width={SCHEDULE_TABLE_WIDTHS[5]}>{getWinProbability(game, teamName)}</Table.Cell>
+                </Table.Row>
+              );
+            })}
           </Table.Body>
         </Table>
       </Grid.Row>
@@ -188,7 +335,7 @@ const TeamModal = ({ columnValuesObject, simulationResults, numberOfSimulations 
         </Message>
       </Grid.Row>
       <Grid.Row>
-        <Table celled style={{ width: '500px' }}>
+        <Table celled style={{ width: '500px' }} unstackable>
           <Table.Header>
             <Table.Row>
               <Table.HeaderCell />
@@ -199,13 +346,13 @@ const TeamModal = ({ columnValuesObject, simulationResults, numberOfSimulations 
             </Table.Row>
           </Table.Header>
           <Table.Body>
-              {_.map(cumulativeLikelihoods, (game, idx) => (
-                <Table.Row>
-                  <Table.Cell width={2}>{`${idx} - ${12  - idx}`}</Table.Cell>
-                  <Table.Cell textAlign='center' width={4}>{(likelihoods[idx] / numberOfSimulations * 100).toFixed(1)}%</Table.Cell>
-                  <Table.Cell textAlign='center' width={4}>{(cumulativeLikelihoods[idx] / numberOfSimulations * 100).toFixed(1)}%</Table.Cell>
-                </Table.Row>
-              ))}
+            {_.map(cumulativeLikelihoods, (game, idx) => (
+              <Table.Row>
+                <Table.Cell width={2}>{`${idx} - ${12 - idx}`}</Table.Cell>
+                <Table.Cell textAlign='center' width={4}>{(likelihoods[idx] / numberOfSimulations * 100).toFixed(1)}%</Table.Cell>
+                <Table.Cell textAlign='center' width={4}>{(cumulativeLikelihoods[idx] / numberOfSimulations * 100).toFixed(1)}%</Table.Cell>
+              </Table.Row>
+            ))}
           </Table.Body>
         </Table>
       </Grid.Row>
@@ -225,10 +372,10 @@ const ModalExample = (columnValuesObject: IndividualTeamSimulationResults & Team
       centered={false}
       closeIcon
       size="fullscreen"
-      
+
     >
       <Header as='h2'>
-        <Image src={columnValuesObject.logos[0]} style={{ marginRight: '20px' }}/>{columnValuesObject.teamName}
+        <Image src={columnValuesObject.logos[0]} style={{ marginRight: '20px' }} />{columnValuesObject.teamName}
         {/* // TODO: Fix h4 vs h2 issue and styling */}
         {/* {columnValuesObject.division && (
           <React.Fragment>
@@ -295,7 +442,7 @@ const determineTeamsToRender = (
     const conferenceTeams = new Set(conferences[conferenceToShow]['teams'])
     return _.pickBy(simulationResults, (v, teamName) => conferenceTeams.has(teamName));
   }
-  
+
   return simulationResults;
 };
 
@@ -321,7 +468,7 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations }
 
   const [{ conferenceToShow, divisionToShow }, updateDropdownState] = useState<DropdownState>({ conferenceToShow: '', divisionToShow: '' });
   const [{ filteredTeams, conferenceDropdownOptions, divisionDropdownOptions }, setState] = useState({
-     filteredTeams: simulationResults, conferenceDropdownOptions: [], divisionDropdownOptions: [],
+    filteredTeams: simulationResults, conferenceDropdownOptions: [], divisionDropdownOptions: [],
   });
   // TODO: State needs to be maintained by each column
   const [{ valueToSortBy, directionToSort }, setValueToSortBy] = useState<SortState>({ valueToSortBy: 'avgPowerRtg', directionToSort: '' });
@@ -358,11 +505,18 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations }
 
   return (
     <React.Fragment>
+      <Responsive maxWidth={499}>
+        <Message warning style={{ margin: '10px 0' }} size='mini'>
+          <Icon name='sync alternate' />
+            Rotate your phone for a better view of the information.
+        </Message>
+      </Responsive>
       <Dropdown
         placeholder='Filter by conference'
         clearable
         closeOnChange
         selection
+        style={{ margin: '5px' }}
         options={conferenceDropdownOptions}
         // @ts-ignore
         onChange={(e: React.SyntheticEvent<HTMLElement>, { value }: DropdownProps) => updateDropdownState({ divisionToShow: '', conferenceToShow: value })}
@@ -374,7 +528,7 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations }
           clearable
           closeOnChange
           selection
-          style={{ marginLeft: '5px' }}
+          style={{ margin: '5px' }}
           options={divisionDropdownOptions}
           // @ts-ignore
           onChange={(e: React.SyntheticEvent<HTMLElement>, { value }: DropdownProps) => updateDropdownState({ divisionToShow: value, conferenceToShow })}
@@ -382,14 +536,15 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations }
       )}
       {/* COME BACK TO DIVISION BUTTONS VS DROPDOWN IF OTHER STUFF DONE */}
       {/* {conferenceToShow && conferences[conferenceToShow]['divisions'] && (
-        <React.Fragment>
-          <p>Filter by division:</p>
-          {Divisions}
-        </React.Fragment>
-      )} */}
-      {/* TODO: Add a note about sorting */}
+                <React.Fragment>
+                  <p>Filter by division:</p>
+                  {Divisions}
+                </React.Fragment>
+              )} */}
+      {/* TODO: Add a note about sorting --> OR icon showing sorting already happened */}
       {/* TODO: Add a note about clicking on the team names */}
-      <Table sortable celled fixed unstackable>
+      {/* TODO: Consider using small / compact */}
+      <Table sortable celled unstackable fixed>
         <Table.Header>
           <Table.Row>
             {/* TODO: add some styling for down arrow and up arrow based on ASC / DESC */}

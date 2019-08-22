@@ -22,9 +22,6 @@ const App: React.FC = () => (
         <Menu.Item>
           Home
         </Menu.Item>
-        <Menu.Item >
-          About
-        </Menu.Item>
         <Menu.Item>
           FAQ
         </Menu.Item>
@@ -35,6 +32,7 @@ const App: React.FC = () => (
           Buy me a coffee
         </Menu.Item> */}
       <Menu.Item position="right">
+        {/* # TODO: pick name */}
         simulate.io
       </Menu.Item>
     </Menu>
