@@ -5,8 +5,6 @@ import { unreachable } from '../utils'
 import SimulationTable from './SimulationTable';
 import { getSimulationResults, getConferences, getTeams } from '../api';
 import { useAsyncEffect } from '../customHooks';
-// TODO: Figure out how to use path properly
-// import path from 'path';
 
 export enum PageStatusEnum {
   LOADING = 'LOADING',
@@ -70,7 +68,6 @@ const INITIAL_STATE = {
   numberOfSimulations: 0,
 };
 
-// type TableState = { column: string | null , data: [], direction: string | null };
 const ApplicationWrapper: React.FC = () => {
   const [state, setState] = useState<State>(INITIAL_STATE);
   const { pageStatus, simulationResults, numberOfSimulations, conferences } = state;
@@ -86,12 +83,11 @@ const ApplicationWrapper: React.FC = () => {
       const mergedSimulationsAndTeamsWithTeamName = _.mapValues(simulationResults, (val, key) => _.merge(val, _.get(teams, key), { teamName: key }));
       setState({ numberOfSimulations, simulationResults: mergedSimulationsAndTeamsWithTeamName, conferences, pageStatus: PageStatusEnum.HAS_DATA });
     } catch (e) {
+      // TODO: handle error
       // set status error
       console.log({ e });
     }
   }, []);
-
-  console.log({ state });
 
   switch (pageStatus) {
     case PageStatusEnum.LOADING:

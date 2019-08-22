@@ -5,7 +5,6 @@ import ApplicationWrapper from './Modules/ApplicationWrapper';
 const App: React.FC = () => (
   <Responsive style={{ margin: '10px 10px' }}>
     {/* // TODO: Add styling to navbar */}
-    {/* // TODO: Change navbar to dropdown on mobile */}
     {/* https://codesandbox.io/s/325y47xk36 */}
     {/* <Responsive maxWidth={499}>
       <Menu.Item>
@@ -25,6 +24,7 @@ const App: React.FC = () => (
         <Menu.Item>
           FAQ
         </Menu.Item>
+        {/* LATER */}
         {/* <Menu.Item >
           Report a bug
         </Menu.Item> */}
