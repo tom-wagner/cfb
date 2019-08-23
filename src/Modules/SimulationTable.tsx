@@ -215,6 +215,9 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations, 
           </p>
         </Message>
       </Responsive>
+      <Message info style={{ margin: '10px 0', width: '400px' }} size='mini'>
+        <Icon name='info' />Simulations results and power ratings last updated {lastUpdated.format('ddd, MMM D')}
+      </Message>
       <Dropdown
         placeholder='Filter by conference'
         clearable
@@ -240,9 +243,6 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations, 
       )}
       {/* </div> */}
       <div id="should-be-centered">
-        <Message info style={{ margin: '10px 0', width: '400px' }} size='mini'>
-          <Icon name='info' />Simulations results and power ratings last updated {lastUpdated.format('ddd, MMM D')}
-        </Message>
         <Table sortable celled unstackable fixed>
           <Table.Header>
             <Table.Row>

@@ -45,13 +45,13 @@ const FAQ = () => {
         2) Using those win likelihoods to simulate the regular season.
       </p>
       <p style={{ fontSize: '16px', maxWidth: '800px' }}>
-        3) Determining division champs (or conference title game participants for conferences without divisions)
+        3) Determining division champs (or conference title game participants for conferences without divisions).
       </p>
       <p style={{ fontSize: '16px', maxWidth: '800px' }}>
-        4) Simulate the conference championship games and determine conference champs for each conference
+        4) Simulate the conference championship games and determine conference champs for each conference.
       </p>
       <p style={{ fontSize: '16px', maxWidth: '800px' }}>
-        4) Repeat
+        5) Repeat.
       </p>
       <Header as="h2" style={{ marginTop: '35px' }}>
         Each step in detail:
@@ -140,7 +140,7 @@ const FAQ = () => {
         What other external resources are used?
       </Header>
       <p style={{ marginTop: '25px', maxWidth: '800px', fontSize: '16px' }}>
-        Schedule and team information is pulled from <a href="https://CollegeFootballData.com">CollegeFootballData.com</a>
+        Schedule and team information is pulled from <a href="https://CollegeFootballData.com">CollegeFootballData.com</a>.
       </p>
       <Header as="h2" style={{ marginTop: '35px' }}>
         How is projected margin used to calculate win likelihood?
@@ -205,7 +205,7 @@ const FAQ = () => {
         LinkedIn
       </Header>
       <p style={{ maxWidth: '800px', fontSize: '16px' }}>
-        <a href="https://www.linkedin.com/in/twagnercpa/">Connect with me on LinkedIn to offer me a job (or refer me to FAANG, or your unicorn startup)</a>
+      <a href="https://www.linkedin.com/in/twagnercpa/">Connect with me on LinkedIn</a> to hire me as a freelance developer, offer me a job, or refer me to FAANG/your unicorn startup.
       </p>
       <Header as="h4" style={{ marginTop: '20px' }}>
         Really, really like the site?
