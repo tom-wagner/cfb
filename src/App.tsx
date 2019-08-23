@@ -9,7 +9,7 @@ enum PageToShow {
 }
 
 const App: React.FC = () => {
-  const [pageToShow, setPageToShow] = useState(PageToShow.TABLE);
+  const [pageToShow, setPageToShow] = useState(PageToShow.FAQ);
   return (
     <Responsive style={{ margin: '15px 10px' }}>
       {/* // TODO: Add styling to navbar */}
@@ -28,13 +28,18 @@ const App: React.FC = () => {
           Buy me a coffee
         </Menu.Item> */}
         <Menu.Item position="right" style={{ fontWeight: 'bold' }}>
-          {/* # TODO: pick name */}
           simulations.run
         </Menu.Item>
       </Menu>
-      {/* // TODO: Move the wrapper/centering logic out here */}
-      {pageToShow === PageToShow.TABLE && <ApplicationWrapper />}
-      {pageToShow === PageToShow.FAQ && <FAQ />}
+      <div id="outer-box" style={{ display: 'flex', alignItems: 'flex-start', flexDirection: 'column' }}>
+        <div id="inner-box-to-be-centered" style={{ alignSelf: 'center', maxWidth: '1400px' }}>
+          <div id="should-be-left-aligned">
+            {/* // TODO: Move the wrapper/centering logic out here */}
+            {pageToShow === PageToShow.TABLE && <ApplicationWrapper />}
+            {pageToShow === PageToShow.FAQ && <FAQ />}
+          </div>
+        </div>
+      </div>
     </Responsive>
   );
 };
