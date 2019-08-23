@@ -9,7 +9,7 @@ enum PageToShow {
 }
 
 const App: React.FC = () => {
-  const [pageToShow, setPageToShow] = useState(PageToShow.FAQ);
+  const [pageToShow, setPageToShow] = useState(PageToShow.TABLE);
   return (
     <Responsive style={{ margin: '15px 10px' }}>
       {/* // TODO: Add styling to navbar */}
@@ -20,13 +20,6 @@ const App: React.FC = () => {
         <Menu.Item onClick={() => setPageToShow(PageToShow.FAQ)} active={pageToShow === PageToShow.FAQ}>
           FAQ
         </Menu.Item>
-        {/* LATER */}
-        {/* <Menu.Item >
-          Report a bug
-        </Menu.Item> */}
-        {/* <Menu.Item>
-          Buy me a coffee
-        </Menu.Item> */}
         <Menu.Item position="right" style={{ fontWeight: 'bold' }}>
           simulations.run
         </Menu.Item>

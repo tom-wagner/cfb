@@ -189,105 +189,99 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations, 
   });
 
   return (
-    // TODO: Show a message about how current simulation results are
     // TODO: Show the number of simulations
     <React.Fragment>
-      <div id="outer-box" style={{ display: 'flex', alignItems: 'flex-start', flexDirection: 'column' }}>
-        <div id="inner-box-to-be-centered" style={{ alignSelf: 'center', maxWidth: '1400px' }}>
-          <div id="should-be-left-aligned">
-            <h2 style={{ margin: '20px 0', fontStyle: 'italic' }}>NCAA Football Simulations</h2>
-            <Responsive maxWidth={499}>
-              <Message warning style={{ margin: '10px 0' }} size='mini'>
-                <Icon name='sync alternate' />Rotate your phone for a better view!
-              </Message>
-            </Responsive>
-            <Responsive minWidth={500}>
-              <Message info style={{ margin: '10px 0' }} size='small'>
-                <p>
-                  Projected results are based on 100,000 simulations of the season using four well-respected power rating
-                  models - ESPN FPI, S&amp;P+, Entropy and Massey. The simulation results are driven by the projected margin
-                  for each game. This is subsequently translated to a win likelihood for every game for each team, which is then
-                  used to power the simulation. The simulation below is a combination of results to date, power ratings and
-                  forward-looking simulations.
-                </p>
-                <p>
-                  <b>For more detail see the FAQ.</b>
-                </p>
-              </Message>
-            </Responsive>
-            <Dropdown
-              placeholder='Filter by conference'
-              clearable
-              closeOnChange
-              selection
-              style={{ margin: '5px 5px 5px 0' }}
-              options={conferenceDropdownOptions}
-              // @ts-ignore
-              onChange={(e: React.SyntheticEvent<HTMLElement>, { value }: DropdownProps) => updateDropdownState({ divisionToShow: '', conferenceToShow: value })}
-            />
-            {/* // TODO: Move below on mobile or make smaller */}
-            {conferenceToShow && conferences[conferenceToShow]['divisions'] && (
-              <Dropdown
-                placeholder='Filter by division'
-                clearable
-                closeOnChange
-                selection
-                style={{ margin: '5px 0 10px 0' }}
-                options={divisionDropdownOptions}
-                // @ts-ignore
-                onChange={(e: React.SyntheticEvent<HTMLElement>, { value }: DropdownProps) => updateDropdownState({ divisionToShow: value, conferenceToShow })}
-              />
-            )}
-          </div>
-          <div id="should-be-centered">
-            <Message info style={{ margin: '10px 0', width: '400px' }} size='mini'>
-              <Icon name='info' />Simulations results and power ratings last updated {lastUpdated.format('ddd, MMM D')}
-            </Message>
-            <Table sortable celled unstackable fixed>
-              <Table.Header>
-                <Table.Row>
-                  {/* TODO: add some styling for down arrow and up arrow based on ascending / descending */}
-                  {_.map(INITIAL_COLUMNS_TO_SHOW, ([columnNameToShowUser, objectPropertyRelatedToColumnName]) => {
-                    return (
-                      <Table.HeaderCell
-                        key={columnNameToShowUser}
-                        sorted={valueToSortBy === objectPropertyRelatedToColumnName ? directionByColumn[valueToSortBy] : null}
-                        onClick={(e: React.ChangeEvent) => setValueToSortBy(
-                          {
-                            valueToSortBy: objectPropertyRelatedToColumnName,
-                            // directionByColumn: // directionToSort === 'ascending' || directionToSort === '' ? 'descending' : 'ascending',
-                            directionByColumn: {
-                              ...directionByColumn,
-                              [valueToSortBy]: '',
-                              [objectPropertyRelatedToColumnName]: (
-                                (directionByColumn[objectPropertyRelatedToColumnName] === 'ascending'
-                                  || directionByColumn[objectPropertyRelatedToColumnName] === '')
-                                  ? 'descending'
-                                  : 'ascending'
-                              ),
-                            }
-                          }
-                        )}
-                      >
-                        {columnNameToShowUser}
-                      </Table.HeaderCell>
-                    );
-                  })}
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {_.map(sortedTeams, (team) => (
-                  <Table.Row key={team.teamName}>
-                    {_.map(INITIAL_COLUMNS_TO_SHOW, ([columnNameToShowUser, objectPropertyRelatedToColumnName]) => {
-                      const [style, value] = columnMapperAndStyler(objectPropertyRelatedToColumnName, team, simulationResults, numberOfSimulations)
-                      return <Table.Cell style={style} key={columnNameToShowUser}>{value}</Table.Cell>;
-                    })}
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table>
-          </div>
-        </div>
+      <h1 style={{ margin: '20px 0' }}>NCAAF Simulations</h1>
+      <Responsive maxWidth={499}>
+        <Message warning style={{ margin: '10px 0' }} size='mini'>
+          <Icon name='sync alternate' />Rotate your phone for a better view!
+        </Message>
+      </Responsive>
+      <Responsive minWidth={500}>
+        <Message info style={{ margin: '10px 0' }} size='small'>
+          <p>
+            Projected results are based on 100,000 simulations of the season using four well-respected power rating
+            models - ESPN FPI, S&amp;P+, Entropy and Massey. The simulation results are driven by the projected margin
+            for each game. This is subsequently translated to a win likelihood for every game for each team, which is then
+            used to power the simulation. The simulation below is a combination of results to date, power ratings and
+            forward-looking simulations.
+          </p>
+          <p>
+            <b>For more detail see the FAQ.</b>
+          </p>
+        </Message>
+      </Responsive>
+      <Dropdown
+        placeholder='Filter by conference'
+        clearable
+        closeOnChange
+        selection
+        style={{ margin: '5px 5px 5px 0' }}
+        options={conferenceDropdownOptions}
+        // @ts-ignore
+        onChange={(e: React.SyntheticEvent<HTMLElement>, { value }: DropdownProps) => updateDropdownState({ divisionToShow: '', conferenceToShow: value })}
+      />
+      {/* // TODO: Move below on mobile or make smaller */}
+      {conferenceToShow && conferences[conferenceToShow]['divisions'] && (
+        <Dropdown
+          placeholder='Filter by division'
+          clearable
+          closeOnChange
+          selection
+          style={{ margin: '5px 0 10px 0' }}
+          options={divisionDropdownOptions}
+          // @ts-ignore
+          onChange={(e: React.SyntheticEvent<HTMLElement>, { value }: DropdownProps) => updateDropdownState({ divisionToShow: value, conferenceToShow })}
+        />
+      )}
+      {/* </div> */}
+      <div id="should-be-centered">
+        <Message info style={{ margin: '10px 0', width: '400px' }} size='mini'>
+          <Icon name='info' />Simulations results and power ratings last updated {lastUpdated.format('ddd, MMM D')}
+        </Message>
+        <Table sortable celled unstackable fixed>
+          <Table.Header>
+            <Table.Row>
+              {/* TODO: add some styling for down arrow and up arrow based on ascending / descending */}
+              {_.map(INITIAL_COLUMNS_TO_SHOW, ([columnNameToShowUser, objectPropertyRelatedToColumnName]) => {
+                return (
+                  <Table.HeaderCell
+                    key={columnNameToShowUser}
+                    sorted={valueToSortBy === objectPropertyRelatedToColumnName ? directionByColumn[valueToSortBy] : null}
+                    onClick={(e: React.ChangeEvent) => setValueToSortBy(
+                      {
+                        valueToSortBy: objectPropertyRelatedToColumnName,
+                        // directionByColumn: // directionToSort === 'ascending' || directionToSort === '' ? 'descending' : 'ascending',
+                        directionByColumn: {
+                          ...directionByColumn,
+                          [valueToSortBy]: '',
+                          [objectPropertyRelatedToColumnName]: (
+                            (directionByColumn[objectPropertyRelatedToColumnName] === 'ascending'
+                              || directionByColumn[objectPropertyRelatedToColumnName] === '')
+                              ? 'descending'
+                              : 'ascending'
+                          ),
+                        }
+                      }
+                    )}
+                  >
+                    {columnNameToShowUser}
+                  </Table.HeaderCell>
+                );
+              })}
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {_.map(sortedTeams, (team) => (
+              <Table.Row key={team.teamName}>
+                {_.map(INITIAL_COLUMNS_TO_SHOW, ([columnNameToShowUser, objectPropertyRelatedToColumnName]) => {
+                  const [style, value] = columnMapperAndStyler(objectPropertyRelatedToColumnName, team, simulationResults, numberOfSimulations)
+                  return <Table.Cell style={style} key={columnNameToShowUser}>{value}</Table.Cell>;
+                })}
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
       </div>
     </React.Fragment>
   );

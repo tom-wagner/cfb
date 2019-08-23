@@ -1,6 +1,7 @@
 import React from 'react';
 import { TwitterTweetEmbed, TwitterShareButton, TwitterFollowButton, TwitterTimelineEmbed } from 'react-twitter-embed';
 import { Image, Responsive, Header } from 'semantic-ui-react';
+import Gist from 'react-gist';
 import faq_image from '../faq.png';
 
 const FAQ = () => (
@@ -16,6 +17,21 @@ const FAQ = () => (
         <Image src={faq_image} alt="FAQ" />
       </div>
     </div>
+    <p style={{ marginTop: '15px', maxWidth: '800px', fontSize: '16px' }}>
+      * - This is the standard home-field-advantage adjustment, see additional detail further down the FAQ.
+    </p>
+    <p style={{ marginTop: '15px', maxWidth: '800px', fontSize: '16px' }}>
+      ** - See the "How does projected margin get translated to win likelihood?" section for more detail.
+    </p>
+    <p style={{ marginTop: '15px', maxWidth: '800px', fontSize: '16px' }}>
+      ^ - Season simulations are run by simulating one game at a time using the win probabilities calculated in the orange steps above.
+    </p>
+    <p style={{ marginTop: '15px', maxWidth: '800px', fontSize: '16px' }}>
+      ^^ - 2-way ties are broken using head to head record, and 3+ way ties are broken randomly.
+    </p>
+    <Header as="h2" style={{ marginTop: '35px' }}>
+      Simulation steps:
+    </Header>
     <p style={{ marginTop: '25px', maxWidth: '800px', fontSize: '16px' }}>
       The simulation can be broken down into five distinct steps:
     </p>
@@ -126,9 +142,18 @@ const FAQ = () => (
     <Header as="h2" style={{ marginTop: '35px' }}>
       How is projected margin used to calculate win likelihood?
     </Header>
-    <p style={{ marginTop: '25px', maxWidth: '800px', fontSize: '16px' }}>
-      
+    <p style={{ marginTop: '15px', maxWidth: '800px', fontSize: '16px' }}>
+      All college football prediction models map projected margins to probability of victory. Historically, college football
+      teams projected to win by 12 have won 75% of the time. The simulation can't predict every game accurately, but that
+      is part of the reason 100,000 simulations are run. Win likelihoods based on projected margin used
+      in this simulation have been set up to match those used in ESPN's FPI.
     </p>
+    <p style={{ marginTop: '15px', maxWidth: '800px', fontSize: '16px' }}>
+      The win probabilities (as decimals) used for a given projected margin are as follows:
+    </p>
+    <div style={{ maxHeight: '450px', overflowY: 'scroll', marginTop: '15px' }}>
+      <Gist id='df8808759a0958e0cad42aebea62da29' />
+    </div>
     <Header as="h2" style={{ marginTop: '35px' }}>
       How often are the simulations updated?
     </Header>
