@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
+import moment from 'moment';
 import _ from 'lodash';
-import { Loader, Dimmer } from 'semantic-ui-react'
+import { Loader, Dimmer, Message } from 'semantic-ui-react'
 import { unreachable } from '../utils'
 import SimulationTable from './SimulationTable';
 import { getSimulationResults, getConferences, getTeams } from '../api';
 import { useAsyncEffect } from '../customHooks';
-// TODO: Figure out how to use path properly
-// import path from 'path';
 
 export enum PageStatusEnum {
   LOADING = 'LOADING',
@@ -53,45 +52,59 @@ export type TeamRatingsMap = { [key: string]: { [key: string]: number } };
 type SimulationResponse = {
   numberOfSimulations: number,
   simulationResults: SimulationResults,
+  lastUpdated: string,
+  showOutdatedWarningStartTime: string,
 };
 
 type State = {
   pageStatus: PageStatusEnum,
+  conferences: Conferences | null,
   simulationResults: SimulationResults | null,
   numberOfSimulations: number,
-  conferences: Conferences | null,
+  lastUpdated: moment.Moment,
+  showOutdatedWarningStartTime: moment.Moment,
 };
 
 const INITIAL_STATE = {
   pageStatus: PageStatusEnum.LOADING,
+  lastUpdated: moment(),
+  showOutdatedWarningStartTime: moment(),
   teams: null,
   conferences: null,
   simulationResults: null,
   numberOfSimulations: 0,
 };
 
-// type TableState = { column: string | null , data: [], direction: string | null };
 const ApplicationWrapper: React.FC = () => {
   const [state, setState] = useState<State>(INITIAL_STATE);
-  const { pageStatus, simulationResults, numberOfSimulations, conferences } = state;
+  const { pageStatus, simulationResults, numberOfSimulations, conferences, lastUpdated, showOutdatedWarningStartTime } = state;
 
   useAsyncEffect(async () => {
     try {
       // @ts-ignore
-      const [{ numberOfSimulations, simulationResults }, conferences, teams]: [SimulationResponse, Conferences, Teams] = await Promise.all([
+      const [
+        { numberOfSimulations, simulationResults, lastUpdated, showOutdatedWarningStartTime },
+        conferences,
+        teams,
+      ]: [SimulationResponse, Conferences, Array<Team>] = await Promise.all([
         getSimulationResults(),
         getConferences(),
         getTeams(),
       ]);
       const mergedSimulationsAndTeamsWithTeamName = _.mapValues(simulationResults, (val, key) => _.merge(val, _.get(teams, key), { teamName: key }));
-      setState({ numberOfSimulations, simulationResults: mergedSimulationsAndTeamsWithTeamName, conferences, pageStatus: PageStatusEnum.HAS_DATA });
+      setState({
+        lastUpdated: moment(lastUpdated),
+        showOutdatedWarningStartTime: moment(showOutdatedWarningStartTime),
+        numberOfSimulations,
+        simulationResults: mergedSimulationsAndTeamsWithTeamName,
+        conferences,
+        pageStatus: PageStatusEnum.HAS_DATA,
+      });
     } catch (e) {
-      // set status error
       console.log({ e });
+      setState({ ...state, pageStatus: PageStatusEnum.ERROR });
     }
   }, []);
-
-  console.log({ state });
 
   switch (pageStatus) {
     case PageStatusEnum.LOADING:
@@ -101,14 +114,23 @@ const ApplicationWrapper: React.FC = () => {
         </Dimmer>
       );
     case PageStatusEnum.ERROR:
-      return <p>error</p>
+      return (
+        <React.Fragment>
+          <div id="outer-box" style={{ display: 'flex', alignItems: 'flex-start', flexDirection: 'column' }}>
+            <div id="inner-box-to-be-centered" style={{ alignSelf: 'center', maxWidth: '1400px', marginTop: '50px' }}>
+              <Message negative>Error loading simulation detail - please try again later.</Message>
+            </div>
+          </div>
+        </React.Fragment>
+      );
     case PageStatusEnum.HAS_DATA:
       return (
         <SimulationTable
-          // @ts-ignore
-          simulationResults={simulationResults as SimulationResults}
+          simulationResults={simulationResults}
           numberOfSimulations={numberOfSimulations}
-          conferences={conferences as Conferences}
+          conferences={conferences}
+          lastUpdated={lastUpdated}
+          showOutdatedWarningStartTime={showOutdatedWarningStartTime}
         />
       );
     default:
