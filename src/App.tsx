@@ -4,7 +4,7 @@ import ApplicationWrapper from './Modules/ApplicationWrapper';
 import FAQ from './Modules/FAQ';
 import ReactGA from 'react-ga';
 
-enum PageToShow {
+export enum PageToShow {
   TABLE = 'TABLE',
   FAQ = 'FAQ'
 }
@@ -31,7 +31,7 @@ const App: React.FC = () => {
         <div id="inner-box-to-be-centered" style={{ alignSelf: 'center', maxWidth: '1400px' }}>
           <div id="should-be-left-aligned">
             {pageToShow === PageToShow.TABLE && <ApplicationWrapper />}
-            {pageToShow === PageToShow.FAQ && <FAQ />}
+            {pageToShow === PageToShow.FAQ && <FAQ setPageToShow={setPageToShow}/>}
           </div>
         </div>
       </div>
