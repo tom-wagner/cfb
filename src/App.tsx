@@ -2,11 +2,15 @@ import React, { useState } from 'react';
 import { Menu, Responsive } from 'semantic-ui-react';
 import ApplicationWrapper from './Modules/ApplicationWrapper';
 import FAQ from './Modules/FAQ';
+import ReactGA from 'react-ga';
 
 enum PageToShow {
   TABLE = 'TABLE',
   FAQ = 'FAQ'
 }
+
+ReactGA.initialize('UA-146337503-1');
+ReactGA.pageview(window.location.pathname + window.location.search);
 
 const App: React.FC = () => {
   const [pageToShow, setPageToShow] = useState(PageToShow.TABLE);

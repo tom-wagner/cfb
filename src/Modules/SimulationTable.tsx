@@ -7,6 +7,7 @@ import { getColorByValue } from '../utils';
 import { TeamModalMobile } from './Modals/Mobile';
 import { TeamModalTablet } from './Modals/Tablet';
 import { TeamModalLargeScreen } from './Modals/LargeScreen';
+import ReactGA from 'react-ga';
 
 // TODO: Turn to constants
 const INITIAL_COLUMNS_TO_SHOW = [
@@ -47,6 +48,7 @@ const linkStyle = {
 };
 
 const TeamModal = (columnValuesObject: IndividualTeamSimulationResults & Team, simulationResults: SimulationResults, numberOfSimulations: number) => {
+  ReactGA.modalview('TeamModalView');
   return (
     <Modal
       trigger={<p style={linkStyle}>{`${columnValuesObject.teamName}`}</p>}
@@ -174,6 +176,8 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations, 
     filteredTeams: simulationResults, conferenceDropdownOptions: [], divisionDropdownOptions: [],
   });
   const [{ valueToSortBy, directionByColumn }, setValueToSortBy] = useState<SortState>(INITIAL_SORTING_STATE);
+
+  ReactGA.pageview('SimulationTable');
 
   useEffect(() => {
     const filteredTeams = determineTeamsToRender(simulationResults, conferences, conferenceToShow, divisionToShow);
