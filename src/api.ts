@@ -1,9 +1,9 @@
 import axios, { AxiosResponse } from 'axios';
-import { BASE_API_URL } from './constants/constants';
+import { PROD_API_URL } from './constants/constants';
 import _ from 'lodash';
 
 export const getSimulationResults = async () => {
-  return axios.get(`${BASE_API_URL}/simulate`).then((data: AxiosResponse) => {
+  return axios.get(`${PROD_API_URL}/simulate`).then((data: AxiosResponse) => {
     console.log(data.data)
     const {
       simulation_results: simulationResults,
@@ -16,11 +16,11 @@ export const getSimulationResults = async () => {
   });
 };
 
-export const getConferences = async () => axios.get(`${BASE_API_URL}/conferences`).then(({ data }: AxiosResponse) => data);
+export const getConferences = async () => axios.get(`${PROD_API_URL}/conferences`).then(({ data }: AxiosResponse) => data);
 
 // TODO: Map
 export const getTeams = async () => {
-  return axios.get(`${BASE_API_URL}/teams`).then(({ data }: AxiosResponse) => {
+  return axios.get(`${PROD_API_URL}/teams`).then(({ data }: AxiosResponse) => {
     const camelCaseValues = _.mapValues(data, teamDetail => _.mapKeys(teamDetail, (v, k) => _.camelCase(k)));
     return camelCaseValues;
   });
