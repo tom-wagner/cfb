@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import moment from 'moment';
 import _ from 'lodash';
-import { Loader, Dimmer } from 'semantic-ui-react'
+import { Loader, Dimmer, Message } from 'semantic-ui-react'
 import { unreachable } from '../utils'
 import SimulationTable from './SimulationTable';
 import { getSimulationResults, getConferences, getTeams } from '../api';
@@ -60,14 +61,14 @@ type State = {
   conferences: Conferences | null,
   simulationResults: SimulationResults | null,
   numberOfSimulations: number,
-  lastUpdated: string,
-  showOutdatedWarningStartTime: string,
+  lastUpdated: moment.Moment,
+  showOutdatedWarningStartTime: moment.Moment,
 };
 
 const INITIAL_STATE = {
   pageStatus: PageStatusEnum.LOADING,
-  lastUpdated: '',
-  showOutdatedWarningStartTime: '',
+  lastUpdated: moment(),
+  showOutdatedWarningStartTime: moment(),
   teams: null,
   conferences: null,
   simulationResults: null,
@@ -76,7 +77,7 @@ const INITIAL_STATE = {
 
 const ApplicationWrapper: React.FC = () => {
   const [state, setState] = useState<State>(INITIAL_STATE);
-  const { pageStatus, simulationResults, numberOfSimulations, conferences } = state;
+  const { pageStatus, simulationResults, numberOfSimulations, conferences, lastUpdated, showOutdatedWarningStartTime } = state;
 
   useAsyncEffect(async () => {
     try {
@@ -91,11 +92,17 @@ const ApplicationWrapper: React.FC = () => {
         getTeams(),
       ]);
       const mergedSimulationsAndTeamsWithTeamName = _.mapValues(simulationResults, (val, key) => _.merge(val, _.get(teams, key), { teamName: key }));
-      setState({ lastUpdated, showOutdatedWarningStartTime, numberOfSimulations, simulationResults: mergedSimulationsAndTeamsWithTeamName, conferences, pageStatus: PageStatusEnum.HAS_DATA });
+      setState({
+        lastUpdated: moment(lastUpdated),
+        showOutdatedWarningStartTime: moment(showOutdatedWarningStartTime),
+        numberOfSimulations,
+        simulationResults: mergedSimulationsAndTeamsWithTeamName,
+        conferences,
+        pageStatus: PageStatusEnum.HAS_DATA,
+      });
     } catch (e) {
-      // TODO: handle error
-      // set status error
       console.log({ e });
+      setState({ ...state, pageStatus: PageStatusEnum.ERROR });
     }
   }, []);
 
@@ -107,15 +114,23 @@ const ApplicationWrapper: React.FC = () => {
         </Dimmer>
       );
     case PageStatusEnum.ERROR:
-      return <p>error</p>
+      return (
+        <React.Fragment>
+          <div id="outer-box" style={{ display: 'flex', alignItems: 'flex-start', flexDirection: 'column' }}>
+            <div id="inner-box-to-be-centered" style={{ alignSelf: 'center', maxWidth: '1400px', marginTop: '50px' }}>
+              <Message negative>Error loading simulation detail - please try again later.</Message>
+            </div>
+          </div>
+        </React.Fragment>
+      );
     case PageStatusEnum.HAS_DATA:
       return (
-        // TODO: Pass lastUpdated and showWarning
         <SimulationTable
-          // @ts-ignore
-          simulationResults={simulationResults as SimulationResults}
+          simulationResults={simulationResults}
           numberOfSimulations={numberOfSimulations}
-          conferences={conferences as Conferences}
+          conferences={conferences}
+          lastUpdated={lastUpdated}
+          showOutdatedWarningStartTime={showOutdatedWarningStartTime}
         />
       );
     default:

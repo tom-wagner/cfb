@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Dropdown, DropdownProps, Image, Modal, Header, Responsive, Message, Icon } from 'semantic-ui-react'
 import _ from 'lodash';
+import moment from 'moment';
+import { Table, Dropdown, DropdownProps, Image, Modal, Header, Responsive, Message, Icon } from 'semantic-ui-react'
 import { SimulationResults, IndividualTeamSimulationResults, Conferences, Team } from './ApplicationWrapper';
 import { getColorByValue } from '../utils';
 import { TeamModalMobile } from './Modals/Mobile';
@@ -158,8 +159,15 @@ const INITIAL_SORTING_STATE = {
 type DropdownState = { conferenceToShow: string, divisionToShow: string };
 const INITIAL_DROPDOWN_STATE = { conferenceToShow: '', divisionToShow: '' };
 
-type SimulationTableProps = { simulationResults: SimulationResults, conferences: Conferences, numberOfSimulations: number };
-const SimulationTable = ({ simulationResults, conferences, numberOfSimulations }: SimulationTableProps) => {
+type SimulationTableProps = {
+  simulationResults: SimulationResults,
+  conferences: Conferences,
+  numberOfSimulations: number,
+  lastUpdated: moment.Moment,
+  showOutdatedWarningStartTime: moment.Moment,
+};
+
+const SimulationTable = ({ simulationResults, conferences, numberOfSimulations, lastUpdated, showOutdatedWarningStartTime }: SimulationTableProps) => {
   const [{ conferenceToShow, divisionToShow }, updateDropdownState] = useState<DropdownState>(INITIAL_DROPDOWN_STATE);
   const [{ filteredTeams, conferenceDropdownOptions, divisionDropdownOptions }, setState] = useState({
     filteredTeams: simulationResults, conferenceDropdownOptions: [], divisionDropdownOptions: [],

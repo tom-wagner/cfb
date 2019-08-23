@@ -4,7 +4,6 @@ import _ from 'lodash';
 
 export const getSimulationResults = async () => {
   return axios.get(`${PROD_API_URL}/simulate`).then((data: AxiosResponse) => {
-    console.log(data.data)
     const {
       simulation_results: simulationResults,
       num_of_sims: numberOfSimulations,

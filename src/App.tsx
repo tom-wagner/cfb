@@ -27,9 +27,9 @@ const App: React.FC = () => {
         {/* <Menu.Item>
           Buy me a coffee
         </Menu.Item> */}
-        <Menu.Item position="right">
+        <Menu.Item position="right" style={{ fontWeight: 'bold' }}>
           {/* # TODO: pick name */}
-          simulate.io
+          simulations.run
         </Menu.Item>
       </Menu>
       {/* // TODO: Move the wrapper/centering logic out here */}
