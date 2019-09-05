@@ -193,7 +193,6 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations, 
   });
 
   return (
-    // TODO: Show the number of simulations
     <React.Fragment>
       <h1 style={{ margin: '20px 0' }}>NCAAF Simulations</h1>
       <Responsive maxWidth={499}>
@@ -215,6 +214,9 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations, 
           </p>
         </Message>
       </Responsive>
+      <Message info style={{ margin: '10px 0', maxWidth: '400px' }} size='mini'>
+        Simulation results and power ratings last updated {lastUpdated.format('ddd, MMM D')}.
+      </Message>
       <Dropdown
         placeholder='Filter by conference'
         clearable
@@ -240,9 +242,6 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations, 
       )}
       {/* </div> */}
       <div id="should-be-centered">
-        <Message info style={{ margin: '10px 0', width: '400px' }} size='mini'>
-          <Icon name='info' />Simulations results and power ratings last updated {lastUpdated.format('ddd, MMM D')}
-        </Message>
         <Table sortable celled unstackable fixed>
           <Table.Header>
             <Table.Row>
@@ -255,7 +254,6 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations, 
                     onClick={(e: React.ChangeEvent) => setValueToSortBy(
                       {
                         valueToSortBy: objectPropertyRelatedToColumnName,
-                        // directionByColumn: // directionToSort === 'ascending' || directionToSort === '' ? 'descending' : 'ascending',
                         directionByColumn: {
                           ...directionByColumn,
                           [valueToSortBy]: '',

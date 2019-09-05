@@ -4,7 +4,7 @@ import ApplicationWrapper from './Modules/ApplicationWrapper';
 import FAQ from './Modules/FAQ';
 import ReactGA from 'react-ga';
 
-enum PageToShow {
+export enum PageToShow {
   TABLE = 'TABLE',
   FAQ = 'FAQ'
 }
@@ -16,7 +16,6 @@ const App: React.FC = () => {
   const [pageToShow, setPageToShow] = useState(PageToShow.TABLE);
   return (
     <Responsive style={{ margin: '15px 10px' }}>
-      {/* // TODO: Add styling to navbar */}
       <Menu>
         <Menu.Item onClick={() => setPageToShow(PageToShow.TABLE)} active={pageToShow === PageToShow.TABLE}>
           Home
@@ -31,9 +30,8 @@ const App: React.FC = () => {
       <div id="outer-box" style={{ display: 'flex', alignItems: 'flex-start', flexDirection: 'column' }}>
         <div id="inner-box-to-be-centered" style={{ alignSelf: 'center', maxWidth: '1400px' }}>
           <div id="should-be-left-aligned">
-            {/* // TODO: Move the wrapper/centering logic out here */}
             {pageToShow === PageToShow.TABLE && <ApplicationWrapper />}
-            {pageToShow === PageToShow.FAQ && <FAQ />}
+            {pageToShow === PageToShow.FAQ && <FAQ setPageToShow={setPageToShow}/>}
           </div>
         </div>
       </div>

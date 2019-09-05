@@ -12,8 +12,18 @@ export const getOpponentPowerRatingAndRank = (game: Game, teamName: string, simu
   return `${_.get(simulationResults[opponent], 'avgPowerRtg', 'N/A')} (${_.get(simulationResults[opponent], 'rankings.avg_power_rtg', '-')})`
 };
 
+const showFinalScore = (game: Game, teamName: string) => {
+  const [htPoints, atPoints] = _.map(['home_points', 'away_points'], s => game[s]);
+  const isHomeTeam = game['home_team'] === teamName;
+  const isWinner = isHomeTeam ? game['home_points'] > game['away_points'] : game['away_points'] > game['home_points']
+  return `${isWinner ? 'WIN' : 'LOSS'}: ${Math.max(htPoints, atPoints)} - ${Math.min(htPoints, atPoints)}`;
+};
+
 export const getProjectedMargin = (game: Game, teamName: string) => {
-  return (game['home_team'] === teamName) ? game['home_team_projected_margin'] : -game['home_team_projected_margin'];
+  if (game['home_team_projected_margin']) {
+    return (game['home_team'] === teamName) ? game['home_team_projected_margin'] : -game['home_team_projected_margin'];
+  }
+  return showFinalScore(game, teamName);
 };
 
 export const getWinProbability = (game: Game, teamName: string) => {

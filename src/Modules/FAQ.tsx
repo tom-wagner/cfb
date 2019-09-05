@@ -1,11 +1,12 @@
 import React from 'react';
+import ReactGA from 'react-ga';
 import { TwitterTweetEmbed, TwitterShareButton, TwitterFollowButton, TwitterTimelineEmbed } from 'react-twitter-embed';
-import { Image, Responsive, Header } from 'semantic-ui-react';
+import { Image, Responsive, Header, Button } from 'semantic-ui-react';
 import Gist from 'react-gist';
 import faq_image from '../faq.png';
-import ReactGA from 'react-ga';
+import { PageToShow } from '../App';
 
-const FAQ = () => {
+const FAQ = ({ setPageToShow }: { setPageToShow: Function }) => {
   ReactGA.pageview('FAQ');
   return (
     <Responsive style={{ marginTop: '15px', marginBottom: '50px' }}>
@@ -45,13 +46,13 @@ const FAQ = () => {
         2) Using those win likelihoods to simulate the regular season.
       </p>
       <p style={{ fontSize: '16px', maxWidth: '800px' }}>
-        3) Determining division champs (or conference title game participants for conferences without divisions)
+        3) Determining division champs (or conference title game participants for conferences without divisions).
       </p>
       <p style={{ fontSize: '16px', maxWidth: '800px' }}>
-        4) Simulate the conference championship games and determine conference champs for each conference
+        4) Simulate the conference championship games and determine conference champs for each conference.
       </p>
       <p style={{ fontSize: '16px', maxWidth: '800px' }}>
-        4) Repeat
+        5) Repeat.
       </p>
       <Header as="h2" style={{ marginTop: '35px' }}>
         Each step in detail:
@@ -140,7 +141,7 @@ const FAQ = () => {
         What other external resources are used?
       </Header>
       <p style={{ marginTop: '25px', maxWidth: '800px', fontSize: '16px' }}>
-        Schedule and team information is pulled from <a href="https://CollegeFootballData.com">CollegeFootballData.com</a>
+        Schedule and team information is pulled from <a href="https://CollegeFootballData.com">CollegeFootballData.com</a>.
       </p>
       <Header as="h2" style={{ marginTop: '35px' }}>
         How is projected margin used to calculate win likelihood?
@@ -154,7 +155,7 @@ const FAQ = () => {
       <p style={{ marginTop: '15px', maxWidth: '800px', fontSize: '16px' }}>
         The win probabilities (as decimals) used for a given projected margin are as follows:
       </p>
-      <div style={{ maxHeight: '450px', overflowY: 'scroll', marginTop: '15px' }}>
+      <div style={{ maxHeight: '450px', maxWidth: '95%', overflowY: 'scroll', overflowX: 'scroll', marginTop: '15px' }}>
         <Gist id='df8808759a0958e0cad42aebea62da29' />
       </div>
       <Header as="h2" style={{ marginTop: '35px' }}>
@@ -166,7 +167,17 @@ const FAQ = () => {
       <Header as="h2" style={{ marginTop: '35px', marginBottom: '25px' }}>
         Why is home field advantage 2.5 points per game?
       </Header>
-      <TwitterTweetEmbed tweetId={'1161624961334861827'} />
+      <Responsive minWidth='500px'>
+        <div style={{ maxHeight: '450px', maxWidth: '90%', overflowY: 'scroll', overflowX: 'scroll', marginTop: '15px' }}>
+          <TwitterTweetEmbed tweetId={'1161624961334861827'} />
+        </div>
+      </Responsive>
+      <Responsive maxWidth='499px'>
+        <p style={{ marginTop: '25px', maxWidth: '800px', fontSize: '16px' }}>
+          Per The average home-field advantage has decreased over time from 3 points to ~2 points
+          <a href="https://twitter.com/WMoneyball/status/1161624961334861827">in the last few years</a>, so 2.5 points is used
+        </p>
+      </Responsive>
       <Header as="h2" style={{ marginTop: '35px' }}>
         Other:
       </Header>
@@ -190,11 +201,13 @@ const FAQ = () => {
       <p style={{ maxWidth: '800px', fontSize: '16px' }}>
         (or tweet at me to let me know why the simulations are trash and disrespected your favorite team)
       </p>
-      <TwitterTimelineEmbed
-        sourceType="profile"
-        screenName="twagner55"
-        options={{height: 500}}
-      />
+      <div style={{ maxHeight: '450px', maxWidth: '95%', overflowY: 'scroll', overflowX: 'scroll', margin: '15px 0' }}>
+        <TwitterTimelineEmbed
+          sourceType="profile"
+          screenName="twagner55"
+          options={{height: 500}}
+        />
+      </div>
       <TwitterFollowButton
         screenName={'twagner55'}
       />
@@ -205,7 +218,7 @@ const FAQ = () => {
         LinkedIn
       </Header>
       <p style={{ maxWidth: '800px', fontSize: '16px' }}>
-        <a href="https://www.linkedin.com/in/twagnercpa/">Connect with me on LinkedIn to offer me a job (or refer me to FAANG, or your unicorn startup)</a>
+      <a href="https://www.linkedin.com/in/twagnercpa/">Connect with me on LinkedIn</a> to hire me as a freelance developer, offer me a job, or refer me to FAANG/your unicorn startup.
       </p>
       <Header as="h4" style={{ marginTop: '20px' }}>
         Really, really like the site?
@@ -219,6 +232,10 @@ const FAQ = () => {
       <p style={{ maxWidth: '800px', fontSize: '16px' }}>
         DM me on Twitter if you want to buy it, or have me take it down and hire me to build it for you.
       </p>
+      <Button onClick={() => {
+        window.scrollTo(0, 0);
+        setPageToShow(PageToShow.TABLE)
+      }}>Back to simulations table</Button>
     </Responsive>
   );
 };
