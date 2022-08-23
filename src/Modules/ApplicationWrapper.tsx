@@ -23,6 +23,7 @@ export type IndividualTeamSimulationResults = {
   divisionTitleCount: number,
   divisionTitleWinPct: number,
   nonConferenceResults: SeasonSimulationForOneTeam,
+  projTotalWins: number,
   totalWins: SeasonSimulationForOneTeam,
   avgPowerRtg: number,
   powerRtgs: { [key: string]: number },
@@ -31,6 +32,7 @@ export type IndividualTeamSimulationResults = {
   division: string,
   rankings: {},
   schedule: Array<Game>,
+  winTotals: { dk: number },
 };
 
 type Conference = {

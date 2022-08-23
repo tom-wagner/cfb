@@ -72,14 +72,14 @@ export const TeamModalLargeScreen = ({ columnValuesObject, simulationResults, nu
         <Table celled fixed unstackable style={{ maxWidth: '900px' }}>
           <Table.Header>
             <Table.Row>
-              {_.map(SCHEDULE_HEADERS, (header, idx) => <Table.HeaderCell width={SCHEDULE_TABLE_WIDTHS[idx]}>{header}</Table.HeaderCell>)}
+              {_.map(SCHEDULE_HEADERS, (header, idx) => <Table.HeaderCell key={idx} width={SCHEDULE_TABLE_WIDTHS[idx]}>{header}</Table.HeaderCell>)}
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {_.map(columnValuesObject.schedule, (game, idx) => {
               const teamName = columnValuesObject.teamName;
               return (
-                <Table.Row>
+                <Table.Row key={idx}>
                   <Table.Cell width={SCHEDULE_TABLE_WIDTHS[0]}>{idx + 1}</Table.Cell>
                   <Table.Cell width={SCHEDULE_TABLE_WIDTHS[1]}>{moment(new Date(game['start_date'])).format('ddd, MMM D')}</Table.Cell>
                   <Table.Cell width={SCHEDULE_TABLE_WIDTHS[2]}>{getOpponent(game, teamName)}</Table.Cell>
@@ -114,12 +114,12 @@ export const TeamModalLargeScreen = ({ columnValuesObject, simulationResults, nu
               <Table.HeaderCell textAlign='center' colSpan='2'>Likelihood of...</Table.HeaderCell>
             </Table.Row>
             <Table.Row>
-              {_.map(['Record', 'finishing exactly ____', 'going ____ or better'], x => <Table.HeaderCell>{x}</Table.HeaderCell>)}
+              {_.map(['Record', 'finishing exactly ____', 'going ____ or better'], x => <Table.HeaderCell key={x}>{x}</Table.HeaderCell>)}
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {_.map(cumulativeLikelihoods, (game, idx) => (
-              <Table.Row>
+              <Table.Row key={idx}>
                 <Table.Cell width={2}>{`${idx} - ${12 - idx}`}</Table.Cell>
                 <Table.Cell textAlign='center' width={4}>{(likelihoods[idx] / numberOfSimulations * 100).toFixed(1)}%</Table.Cell>
                 <Table.Cell textAlign='center' width={4}>{(cumulativeLikelihoods[idx] / numberOfSimulations * 100).toFixed(1)}%</Table.Cell>

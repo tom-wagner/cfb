@@ -14,6 +14,9 @@ const INITIAL_COLUMNS_TO_SHOW = [
   // [textToShowToUser, propertyOnTeamObject]
   ['Team', 'teamName'],
   ['Average Power Rtg', 'avgPowerRtg'],
+  ['Proj. wins', 'projTotalWins'],
+  ['Win Total', 'winTotal'],
+  ['Win Total Diff', 'winTotalDiff'],
   ['Win Division %', 'divisionTitleWinPct'],
   ['Win Conference %', 'conferenceTitleWinPct'],
 ];
@@ -38,6 +41,10 @@ const styleByValue = (
     const absolutePowerRatingDivHundred = Math.abs(columnValuesObject.avgPowerRtg * .01);
     return { backgroundColor: getColorByValue(absolutePowerRatingDivHundred) };
   }
+  if (columnName === 'projTotalWins') {
+    // const absolutePowerRatingDivHundred = Math.abs(columnValuesObject.projTotalWins / 12);
+    return { backgroundColor: getColorByValue(columnValuesObject.projTotalWins / 12) };
+  }
   return {};
 }
 
@@ -57,7 +64,7 @@ const TeamModal = (columnValuesObject: IndividualTeamSimulationResults & Team, s
       size="fullscreen"
     >
       <Header as='h2'>
-        <Image src={columnValuesObject.logos[0]} style={{ marginRight: '20px' }} />{columnValuesObject.teamName}
+        {/* <Image src={columnValuesObject.logos[0]} style={{ marginRight: '20px' }} />{columnValuesObject.teamName} */}
         {/* // TODO: Fix h4 vs h2 issue and styling */}
         {/* {columnValuesObject.division && (
           <React.Fragment>
@@ -109,12 +116,18 @@ const columnMapperAndStyler = (
   simulationResults: SimulationResults,
   numberOfSimulations: number,
 ) => {
+  const winTotal = columnValuesObject.winTotals && columnValuesObject.winTotals.dk ? columnValuesObject.winTotals.dk : undefined;
   const map = {
     'teamName': TeamModal(columnValuesObject, simulationResults, numberOfSimulations),
     'avgPowerRtg': columnValuesObject.avgPowerRtg,
+    'projTotalWins': columnValuesObject.projTotalWins,
+    'winTotal': winTotal,
+    'winTotalDiff': Math.round(Math.abs(winTotal - columnValuesObject.projTotalWins) * 100) / 100,
     'divisionTitleWinPct': columnValuesObject.divisionTitleWinPct === -1 ? 'N/A' : `${(columnValuesObject.divisionTitleWinPct * 100).toFixed(2)} %`,
     'conferenceTitleWinPct': columnValuesObject.conferenceTitleWinPct === -1 ? 'N/A' : `${(columnValuesObject.conferenceTitleWinPct * 100).toFixed(2)} %`,
   };
+
+  // console.log(JSON.stringify(columnValuesObject.winTotals.dk))
 
   const style = styleByValue(columnName, columnValuesObject);
 
@@ -139,7 +152,8 @@ const determineTeamsToRender = (
     return _.pickBy(simulationResults, (v, teamName) => conferenceTeams.has(teamName));
   }
 
-  return simulationResults;
+  // Total hack, remove
+  return _.pickBy(simulationResults, (v, teamName) => teamName !== 'James Madison');
 };
 
 const getConferenceDropdownOptions = (conferences: Conferences) => {
@@ -156,7 +170,14 @@ const getDivisionDropdownOptions = (conferences: Conferences, conferenceToShow: 
 type SortState = { valueToSortBy: string, directionByColumn: { avgPowerRtg: string, divisionTitleWinPct: string, conferenceTitleWinPct: string } };
 const INITIAL_SORTING_STATE = {
   valueToSortBy: 'avgPowerRtg',
-  directionByColumn: { avgPowerRtg: 'descending', divisionTitleWinPct: '', conferenceTitleWinPct: '' },
+  directionByColumn: {
+    avgPowerRtg: 'descending',
+    divisionTitleWinPct: '',
+    conferenceTitleWinPct: '',
+    projTotalWins: 'descending',
+    winTotal: 'descending',
+    winTotalDiff: 'descending',
+  },
 };
 
 type DropdownState = { conferenceToShow: string, divisionToShow: string };
@@ -187,7 +208,15 @@ const SimulationTable = ({ simulationResults, conferences, numberOfSimulations, 
     setState({ filteredTeams, conferenceDropdownOptions, divisionDropdownOptions });
   }, [conferenceToShow, divisionToShow, conferences, simulationResults]);
 
+  console.log({ filteredTeams });
+
   const sortedTeams = _.sortBy(filteredTeams, team => {
+    if (valueToSortBy === 'winTotal') {
+      // @ts-ignore
+      return (directionByColumn[valueToSortBy] === '' || directionByColumn[valueToSortBy] === 'descending') ? -team.winTotals.dk : team.winTotals.dk;  
+    } else if (valueToSortBy === 'winTotalDiff') {
+      return (directionByColumn[valueToSortBy] === '' || directionByColumn[valueToSortBy] === 'descending') ? -(Math.round(Math.abs(team.winTotals.dk - team.projTotalWins) * 100) / 100) : Math.round(Math.abs(team.winTotals.dk - team.projTotalWins) * 100) / 100;  
+    }
     // TODO: Fix sorting bug for teamName
     return (directionByColumn[valueToSortBy] === '' || directionByColumn[valueToSortBy] === 'descending') ? -team[valueToSortBy] : team[valueToSortBy];
   });
