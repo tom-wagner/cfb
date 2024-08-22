@@ -1,5 +1,10 @@
 # CFB
 
+## Getting this garbage to run
+
+1. Might need node 15+ (`nvm install v15`, `nvm use v15`, etc) (using v16 on work computer)
+2. 
+
 ## SCRIPTS:
 
 ### `npm start`
@@ -22,3 +27,6 @@ It correctly bundles React in production mode and optimizes the build for the be
 
 The build is minified and the filenames include the hashes.<br>
 Your app is ready to be deployed!
+
+
+#

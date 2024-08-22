@@ -57,7 +57,8 @@ const TeamModal = (columnValuesObject: IndividualTeamSimulationResults & Team, s
       size="fullscreen"
     >
       <Header as='h2'>
-        <Image src={columnValuesObject.logos[0]} style={{ marginRight: '20px' }} />{columnValuesObject.teamName}
+        {/* <Image src={columnValuesObject.logos[0]} style={{ marginRight: '20px' }} /> */}
+        {columnValuesObject.teamName}
         {/* // TODO: Fix h4 vs h2 issue and styling */}
         {/* {columnValuesObject.division && (
           <React.Fragment>
